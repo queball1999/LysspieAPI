@@ -1,6 +1,8 @@
 flask
-SQLAlchemy
+flask-login 
+flask-jwt-extended 
+flask-bcrypt
 flask_sqlalchemy
+SQLAlchemy
 python-dotenv
 psycopg2
-flask-sse

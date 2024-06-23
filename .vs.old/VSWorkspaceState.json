@@ -3,6 +3,9 @@
     "",
     "\\LysspieAPI",
     "\\LysspieAPI\\endpoints",
+    "\\LysspieAPI\\static",
+    "\\LysspieAPI\\static\\css",
+    "\\LysspieAPI\\static\\js",
     "\\LysspieAPI\\templates",
     "\\LysspieAPI\\tests"
   ],
