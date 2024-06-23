@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            background-color: pink;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .column {
+            width: 45%;
+            background-color: white;
+            border: 2px solid white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+            .column h2 {
+                text-align: center;
+            }
+
+        .list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+            .list li {
+                padding: 10px;
+                border-bottom: 1px solid #ccc;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+                .list li:last-child {
+                    border-bottom: none;
+                }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+            .controls button,
+            .controls select {
+                margin: 0 10px;
+                padding: 10px;
+                border: 2px solid white;
+                border-radius: 15px;
+                background-color: white;
+                cursor: pointer;
+            }
+
+        .draggable {
+            cursor: move;
+        }
+
+        .remove-btn, .ban-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        .adjust-lives {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="fetchData()">Refresh</button>
+        <button onclick="cleanQueue()">Clean Queue</button>
+        <label for="interval">Auto-Refresh Interval:</label>
+        <select id="interval" onchange="setRefreshInterval()">
+            <option value="1000">1 Second</option>
+            <option value="5000" selected>5 Seconds</option>
+            <option value="10000">10 Seconds</option>
+            <option value="30000">30 Seconds</option>
+            <option value="60000">1 Minute</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <div class="column">
+            <h2>Queue</h2>
+            <ol id="queue-list" class="list">
+                <!-- Queue items will be inserted here by JavaScript -->
+            </ol>
+        </div>
+        <div class="column">
+            <h2>Lives</h2>
+            <ul id="lives-list" class="list">
+                <!-- Lives items will be inserted here by JavaScript -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let refreshInterval = 5000; // Default to 5 seconds
+        let intervalId;
+
+        function fetchData() {
+            fetch('/api/queue')
+                .then(response => response.json())
+                .then(data => {
+                    const queueList = document.getElementById('queue-list');
+                    queueList.innerHTML = '';
+                    data.queue.forEach(user => {
+                        const li = document.createElement('li');
+                        li.classList.add('draggable');
+                        li.setAttribute('draggable', true);
+                        li.dataset.username = user.username;
+                        li.innerHTML = `
+                                <span>${user.username}</span>
+                                <button class="remove-btn" onclick="removeUser('${user.username}')">x</button>
+                            `;
+                        queueList.appendChild(li);
+                    });
+                    addDragAndDropListeners();
+                });
+
+            fetch('/api/lives')
+                .then(response => response.json())
+                .then(data => {
+                    const livesList = document.getElementById('lives-list');
+                    livesList.innerHTML = '';
+                    data.lives.forEach(user => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                                <span>${user.username} - ${user.lives} lives left</span>
+                                <button class="adjust-lives" onclick="adjustLives('${user.username}', 1)">+1</button>
+                                <button class="adjust-lives" onclick="adjustLives('${user.username}', -1)">-1</button>
+                                <button class="ban-btn" onclick="banUser('${user.username}')">Ban</button>
+                            `;
+                        livesList.appendChild(li);
+                    });
+                });
+        }
+
+        function setRefreshInterval() {
+            const intervalSelect = document.getElementById('interval');
+            refreshInterval = parseInt(intervalSelect.value, 10);
+            clearInterval(intervalId);
+            intervalId = setInterval(fetchData, refreshInterval);
+        }
+
+        function cleanQueue() {
+            fetch('/api/clean_queue', { method: 'POST' })
+                .then(response => response.text())
+                .then(data => {
+                    fetchData();
+                });
+        }
+
+        function removeUser(username) {
+            fetch(`/api/remove_user?username=${username}`, { method: 'POST' })
+                .then(response => response.text())
+                .then(data => {
+                    fetchData();
+                });
+        }
+
+        function adjustLives(username, amount) {
+            fetch(`/api/adjust_lives?username=${username}&amount=${amount}`, { method: 'POST' })
+                .then(response => response.text())
+                .then(data => {
+                    fetchData();
+                });
+        }
+
+        function banUser(username) {
+            fetch(`/api/ban_user?username=${username}`, { method: 'POST' })
+                .then(response => response.text())
+                .then(data => {
+                    fetchData();
+                });
+        }
+
+        function addDragAndDropListeners() {
+            const draggables = document.querySelectorAll('.draggable');
+            const queueList = document.getElementById('queue-list');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', () => {
+                    draggable.classList.add('dragging');
+                });
+
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('dragging');
+                    updateQueueOrder();
+                });
+            });
+
+            queueList.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(queueList, e.clientY);
+                const dragging = document.querySelector('.dragging');
+                if (afterElement == null) {
+                    queueList.appendChild(dragging);
+                } else {
+                    queueList.insertBefore(dragging, afterElement);
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function updateQueueOrder() {
+            const queueList = document.getElementById('queue-list');
+            const queueItems = queueList.querySelectorAll('.draggable');
+            const usernames = Array.from(queueItems).map(item => item.dataset.username);
+
+            fetch('/api/update_queue_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order: usernames })
+            }).then(response => response.text())
+                .then(data => {
+                    fetchData();
+                });
+        }
+
+        // Fetch data initially and set up auto-refresh
+        fetchData();
+        intervalId = setInterval(fetchData, refreshInterval);
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\LysspieAPI",
+    "\\LysspieAPI\\endpoints",
+    "\\LysspieAPI\\templates",
+    "\\LysspieAPI\\tests"
+  ],
+  "SelectedNode": "\\LysspieAPI\\tests\\test_api.py",
+  "PreviewInSolutionExplorer": false
+}

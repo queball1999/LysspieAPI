@@ -1,0 +1,24 @@
+Command: !join
+Response:
+
+makefile
+Copy code
+$(eval r = "$(urlfetch https://script.google.com/macros/s/AKfycbxjUyCbUU1loyOO5GVGAjAk17I-ShqytgEvNeJaLt8lOROVOpeTPyCfcbRyierYovz3/exec?action=join&username=$(user))"; r === "joined_queue" ? "$(user) has joined the queue!" : r === "already_in_queue" ? "$(user) is already in the queue!" : "There was an error processing your request.")
+Command: !leave
+Response:
+
+shell
+Copy code
+$(eval r = "$(urlfetch https://script.google.com/macros/s/AKfycbxjUyCbUU1loyOO5GVGAjAk17I-ShqytgEvNeJaLt8lOROVOpeTPyCfcbRyierYovz3/exec?action=leave&username=$(user))"; r === "left_queue" ? "$(user) has left the queue!" : r === "not_in_queue" ? "$(user) is not in the queue!" : "There was an error processing your request.")
+Command: !skip
+Response:
+
+shell
+Copy code
+$(eval r = "$(urlfetch https://script.google.com/macros/s/AKfycbxjUyCbUU1loyOO5GVGAjAk17I-ShqytgEvNeJaLt8lOROVOpeTPyCfcbRyierYovz3/exec?action=skip)"; r !== "queue_empty" ? r + " has skipped this round and will go next." : "The queue is empty.")
+Command: !position
+Response:
+
+shell
+Copy code
+$(eval r = "$(urlfetch https://script.google.com/macros/s/AKfycbxjUyCbUU1loyOO5GVGAjAk17I-ShqytgEvNeJaLt8lOROVOpeTPyCfcbRyierYovz3/exec?action=position&username=$(user))"; r !== "not_in_queue" ? "$(user), your position in the queue is " + r + "." : "$(user) is not in the queue!")
