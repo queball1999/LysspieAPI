@@ -26,9 +26,12 @@ def test_ninelives(username):
 if __name__ == "__main__":
     # Test cases
     test_username = "testuser"
-    
-    print("Testing join:")
-    test_join(test_username)
+    for i in range (25):
+        print("Testing join:")
+        user = f"{test_username}{i}"
+        test_join(user)
+        time.sleep(1)
+    """
     time.sleep(5)
     
     print("\nTesting position:")
@@ -45,3 +48,4 @@ if __name__ == "__main__":
     
     print("\nTesting nine lives:")
     test_ninelives(test_username)
+    """

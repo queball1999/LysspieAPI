@@ -217,6 +217,34 @@ function updateQueueOrder() {
         });
 }
 
+function spinQueue() {
+    const spinCount = parseInt(document.getElementById('spin-count').value);
+    const queueList = document.getElementById('queue-list');
+    const queueItems = queueList.querySelectorAll('.draggable');
+    const totalUsers = Array.from(queueItems);
+
+    if (totalUsers.length < spinCount) {
+        alert('Not enough users in the queue.');
+        return;
+    }
+
+    let chosenUsers = [];
+    for (let i = 0; i < spinCount; i++) {
+        const randomIndex = Math.floor(Math.random() * totalUsers.length);
+        const chosenUser = totalUsers.splice(randomIndex, 1)[0];
+        chosenUser.classList.add('highlight');
+        chosenUsers.push(chosenUser);
+    }
+
+    clearSpin();  // Clear previous spin highlights
+    chosenUsers.forEach(user => queueList.appendChild(user));
+}
+
+function clearSpin() {
+    const highlightedUsers = document.querySelectorAll('.highlight');
+    highlightedUsers.forEach(user => user.classList.remove('highlight'));
+}
+
 // Fetch data initially and set up auto-refresh
 fetchData();
 intervalId = setInterval(fetchData, refreshInterval);

@@ -6,6 +6,11 @@ from dotenv import load_dotenv
 from flask.logging import create_logger
 from flask_jwt_extended import JWTManager
 
+##FIXME:
+# - Queue and lives columns need to max out at similar spacing towards botton and become scrollable
+# - All the queue controls need to move to the top?
+# - spin seems to shuiffle the items, but not actually highlight any
+
 # Custom module imports
 #from handling import LOG, ENCRYPTION, TOKEN
 from endpoints import *

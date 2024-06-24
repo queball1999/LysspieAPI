@@ -84,15 +84,19 @@ body {
     padding-top: 20px;
 }
 
+.queue-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .list {
     list-style-type: none;
     padding: 0;
 }
 
-.clear-queue-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+.clear-queue-btn, .spin-btn {
+    margin-top: 10px;
 }
 
 .draggable {
@@ -104,6 +108,11 @@ body {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+}
+
+.highlight {
+    background-color: yellow;
+    font-weight: bold;
 }
 
 .remove-btn {
