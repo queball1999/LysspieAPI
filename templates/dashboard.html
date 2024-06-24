@@ -56,6 +56,10 @@
             window.location.href = '/login';
         }
 
+        window.addEventListener('beforeunload', function () {
+            localStorage.removeItem('token');
+        });
+
         function toggleDropdown() {
             const dropdownMenu = document.getElementById('dropdown-menu');
             dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';

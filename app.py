@@ -41,7 +41,8 @@ APP_DEFAULT_PASSWORD = os.getenv('APP_DEFAULT_PASSWORD')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
-#app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600)))
+print(timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))))
 
 # Initialize JWT
 jwt = JWTManager(app)
