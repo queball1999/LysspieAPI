@@ -34,14 +34,14 @@
     <div class="container">
         <div class="column">
             <h2>Queue</h2>
+            <input type="number" id="spin-count" min="1" max="100" value="1">
+            <button onclick="spinQueue()">Spin</button>
+            <button onclick="clearSpin()">Clear Spin</button>
+            <button class="clear-queue-btn" onclick="cleanQueue()">Clear Queue</button>
             <div class="queue-container">
                 <ol id="queue-list" class="list">
                     <!-- Queue items will be inserted here by JavaScript -->
                 </ol>
-                <input type="number" id="spin-count" min="1" max="100" value="1">
-                <button onclick="spinQueue()">Spin</button>
-                <button onclick="clearSpin()">Clear Spin</button>
-                <button class="clear-queue-btn" onclick="cleanQueue()">Clear Queue</button>
             </div>
         </div>
         <div class="column">

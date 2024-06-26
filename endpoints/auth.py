@@ -15,6 +15,9 @@ def login():
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"msg": "Bad request"}), 400
 
+    ##FIXME: Need to add email and password parsing to ensure no SQL injection takes place
+    
+
     user = User.query.filter_by(email=data['email']).first()
     if user and user.verify_password(data['password']):
         access_token = create_access_token(identity=user.email)

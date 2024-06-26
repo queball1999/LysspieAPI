@@ -15,11 +15,7 @@ LysspieAPI is a backend web interface and API for managing Nightbot commands, qu
 
 - Python 3.8+
 - Flask
-- Flask-JWT-Extended
-- Flask-SQLAlchemy
 - PostgreSQL or MySQL database
-- JavaScript (for front-end functionality)
-- CSS (for front-end styling)
 
 ## Installation
 
@@ -57,18 +53,10 @@ LysspieAPI is a backend web interface and API for managing Nightbot commands, qu
     JWT_DEFAULT_TIMEOUT=15  # timeout in minutes
     ```
 
-5. Initialize the database:
+5. Run the application:
 
     ```bash
-    flask db init
-    flask db migrate
-    flask db upgrade
-    ```
-
-6. Run the Flask application:
-
-    ```bash
-    flask run
+    python app.py
     ```
 
 ## Endpoints

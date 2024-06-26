@@ -9,19 +9,15 @@ from flask_jwt_extended import JWTManager
 ##FIXME:
 # - Queue and lives columns need to max out at similar spacing towards botton and become scrollable
 # - All the queue controls need to move to the top?
-# - spin seems to shuiffle the items, but not actually highlight any
+# - spin seems to shuffle the items, but not actually highlight any
 # - JWT timeout seems to work, but I need to make sure it only "starts" when there is no activity. basically with every user input, we can refresh timeout?
+#    - Remove revoking jwt when navigating away from page. Only want to do time based JWT.
 
 # Custom module imports
-#from handling import LOG, ENCRYPTION, TOKEN
 from endpoints import *
 
 # load .env
 load_dotenv()
-
-# Initialize extensions
-#enc = ENCRYPTION()
-#ex = TOKEN()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -30,7 +26,6 @@ app = Flask(__name__)
 log = create_logger(app)    # flask built-in logging
 
 log_filepath = os.path.join(os.path.dirname(__file__), 'log', 'app.log')
-#LOG.setup_logger(log_filepath=log_filepath) # python logging module
 
 # define config variables
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 't']
@@ -48,7 +43,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600)))
-print(timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))))
 
 # Initialize JWT
 jwt = JWTManager(app)

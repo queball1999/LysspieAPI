@@ -110,9 +110,9 @@ body {
     cursor: pointer;
 }
 
-.highlight {
-    background-color: yellow;
-    font-weight: bold;
+.username {
+    flex-grow: 1; /* This allows the username to take up available space */
+    margin-left: 10px; /* Add space between the checkbox and the username */
 }
 
 .remove-btn {
@@ -121,6 +121,7 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    margin-left: 10px; /* Add space between the username and the remove button */
 }
 
 .adjust-lives, .ban-btn {
@@ -129,4 +130,13 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.highlight {
+    background-color: yellow;
+    font-weight: bold;
+}
+
+.highlight-checkbox {
+    margin-right: 10px;
 }

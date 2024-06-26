@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE_URL = "http://172.31.80.1:5000"  # Change this if your Flask app is running on a different address
+BASE_URL = "http://172.18.240.1:5000"  # Change this if your Flask app is running on a different address
 
 def test_join(username):
     response = requests.get(f"{BASE_URL}/queue", params={"action": "join", "username": username})
@@ -25,27 +25,29 @@ def test_ninelives(username):
 
 if __name__ == "__main__":
     # Test cases
+    
     test_username = "testuser"
-    for i in range (25):
+    
+    for i in range (5):
         print("Testing join:")
         user = f"{test_username}{i}"
         test_join(user)
         time.sleep(1)
-    """
-    time.sleep(5)
     
-    print("\nTesting position:")
-    test_position(test_username)
-    time.sleep(5)
+        print("\nTesting position:")
+        test_position(user)
+        time.sleep(1)
     
-    print("\nTesting leave:")
-    test_leave(test_username)
-    time.sleep(5)
+        print("\nTesting skip:")
+        test_skip()
+        time.sleep(1)
     
-    print("\nTesting skip:")
-    test_skip()
-    time.sleep(5)
+        print("\nTesting leave:")
+        test_leave(user)
+        time.sleep(1)
+    
+    
     
     print("\nTesting nine lives:")
     test_ninelives(test_username)
-    """
+    
