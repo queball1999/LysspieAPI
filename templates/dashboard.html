@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>LysspieAPI Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 </head>
 <body>
     <div class="header">
+        <a href="#" class="site-title-icon">
+            <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Home">
+        </a>
         <div class="controls">
             <div class="refresh-interval">
                 <button onclick="fetchData()">Refresh</button>
@@ -38,6 +42,7 @@
             <button onclick="spinQueue()">Spin</button>
             <button onclick="clearSpin()">Clear Spin</button>
             <button class="clear-queue-btn" onclick="cleanQueue()">Clear Queue</button>
+            <button class="toggle-view-btn" onclick="toggleView('queue-list')">Grid</button>
             <div class="queue-container">
                 <ol id="queue-list" class="list">
                     <!-- Queue items will be inserted here by JavaScript -->
@@ -46,9 +51,17 @@
         </div>
         <div class="column">
             <h2>Lives</h2>
-            <ul id="lives-list" class="list">
-                <!-- Lives items will be inserted here by JavaScript -->
-            </ul>
+            <div class="lives-controls">
+                <input type="checkbox" id="select-all-lives" onclick="toggleSelectAllLives(this)">
+                <button class="bulk-ban-btn" onclick="bulkBanUsers()" disabled>Bulk Ban</button>
+                <button class="bulk-clear-btn" onclick="bulkClearLives()" disabled>Bulk Clear</button>
+            </div>
+            <button class="toggle-view-btn" onclick="toggleView('lives-list')">Grid</button>
+            <div class="lives-container">
+                <ul id="lives-list" class="list">
+                    <!-- Lives items will be inserted here by JavaScript -->
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -58,10 +71,6 @@
         if (!token) {
             window.location.href = '/login';
         }
-
-        window.addEventListener('beforeunload', function () {
-            localStorage.removeItem('token');
-        });
 
         function toggleDropdown() {
             const dropdownMenu = document.getElementById('dropdown-menu');

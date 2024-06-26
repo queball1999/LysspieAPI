@@ -52,3 +52,52 @@ def manage_ninelives():
         except IntegrityError:
             db.session.rollback()
             return "There was an error processing your request.", 500
+        
+
+@ninelives_bp.route('/api/bulk_ban', methods=['POST'])
+def bulk_ban():
+    data = request.get_json()
+    usernames = data.get('usernames', [])
+    
+    for username in usernames:
+        user = NineLives.query.filter_by(username=username).first()
+        if user:
+            user.banned = True
+    db.session.commit()
+    return "Users banned successfully", 200
+
+
+@ninelives_bp.route('/api/bulk_clear', methods=['POST'])
+def bulk_clear():
+    data = request.get_json()
+    usernames = data.get('usernames', [])
+    
+    for username in usernames:
+        user = NineLives.query.filter_by(username=username).first()
+        if user:
+            db.session.delete(user)
+    db.session.commit()
+    return "Lives cleared successfully", 200
+
+
+@ninelives_bp.route('/api/ban_user', methods=['POST'])
+def ban_user():
+    username = request.args.get('username')
+    user = NineLives.query.filter_by(username=username).first()
+    if user:
+        user.banned = True
+        db.session.commit()
+        return "User banned successfully", 200
+    return "User not found", 404
+
+
+@ninelives_bp.route('/api/adjust_lives', methods=['POST'])
+def adjust_lives():
+    username = request.args.get('username')
+    amount = int(request.args.get('amount'))
+    user = NineLives.query.filter_by(username=username).first()
+    if user:
+        user.lives += amount
+        db.session.commit()
+        return "Lives adjusted successfully", 200
+    return "User not found", 404

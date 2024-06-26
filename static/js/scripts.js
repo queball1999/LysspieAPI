@@ -1,38 +1,39 @@
-let refreshInterval = 5000; // Default to 5 seconds
+﻿let refreshInterval = 5000; // Default to 5 seconds
 let intervalId;
 
-// Function to get highlighted users from localStorage
 function getHighlightedUsers() {
     return JSON.parse(localStorage.getItem('highlightedUsers')) || [];
 }
 
-// Function to save highlighted users to localStorage
 function saveHighlightedUsers(users) {
     localStorage.setItem('highlightedUsers', JSON.stringify(users));
 }
 
-// Function to get the current queue order from localStorage
 function getQueueOrder() {
     return JSON.parse(localStorage.getItem('queueOrder')) || [];
 }
 
-// Function to save the current queue order to localStorage
 function saveQueueOrder(order) {
     localStorage.setItem('queueOrder', JSON.stringify(order));
 }
 
+function getSelectedLivesUsers() {
+    return JSON.parse(localStorage.getItem('selectedLivesUsers')) || [];
+}
+
+function saveSelectedLivesUsers(users) {
+    localStorage.setItem('selectedLivesUsers', JSON.stringify(users));
+}
+
 function fetchData() {
     const token = localStorage.getItem('token');
-    console.log(`Using JWT Token: ${token}`);  // Debug print
     if (!token) {
         window.location.href = '/login';
         return;
     }
 
     fetch('/api/queue', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     })
         .then(response => {
             if (response.status === 401) {
@@ -46,7 +47,6 @@ function fetchData() {
             const queueList = document.getElementById('queue-list');
             queueList.innerHTML = '';
 
-            // Reorder the queue data based on saved order
             const orderedQueue = data.queue.sort((a, b) => {
                 const indexA = queueOrder.indexOf(a.username);
                 const indexB = queueOrder.indexOf(b.username);
@@ -60,7 +60,7 @@ function fetchData() {
                 li.dataset.username = user.username;
                 li.innerHTML = `
                 <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${highlightedUsers.includes(user.username) ? 'checked' : ''}>
-                <span>${user.username}</span>
+                <span class="username">${user.username}</span>
                 <button class="remove-btn" onclick="removeUser('${user.username}')">x</button>
             `;
                 if (highlightedUsers.includes(user.username)) {
@@ -72,9 +72,7 @@ function fetchData() {
         });
 
     fetch('/api/lives', {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     })
         .then(response => {
             if (response.status === 401) {
@@ -84,17 +82,22 @@ function fetchData() {
         })
         .then(data => {
             const livesList = document.getElementById('lives-list');
+            const selectedLivesUsers = getSelectedLivesUsers();
             livesList.innerHTML = '';
             data.lives.forEach(user => {
                 const li = document.createElement('li');
+                li.classList.add('draggable');
+                li.setAttribute('draggable', true);
+                li.dataset.username = user.username;
                 li.innerHTML = `
-                <span>${user.username} - ${user.lives} lives left</span>
+                <input type="checkbox" class="highlight-checkbox" onchange="toggleSelectLivesUser(this)" ${selectedLivesUsers.includes(user.username) ? 'checked' : ''}>
+                <span class="username">${user.username} - ${user.lives} lives left</span>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', 1)">+1</button>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', -1)">-1</button>
-                <button class="ban-btn" onclick="banUser('${user.username}')">Ban</button>
             `;
                 livesList.appendChild(li);
             });
+            toggleBulkButtons();
         });
 }
 
@@ -107,7 +110,6 @@ function setRefreshInterval() {
 
 function cleanQueue() {
     const token = localStorage.getItem('token');
-    console.log(`Using JWT Token in cleanQueue: ${token}`);  // Debug print
     if (!token) {
         window.location.href = '/login';
         return;
@@ -115,9 +117,7 @@ function cleanQueue() {
 
     fetch('/api/clean_queue', {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     })
         .then(response => response.text())
         .then(data => {
@@ -127,7 +127,6 @@ function cleanQueue() {
 
 function removeUser(username) {
     const token = localStorage.getItem('token');
-    console.log(`Using JWT Token in removeUser: ${token}`);  // Debug print
     if (!token) {
         window.location.href = '/login';
         return;
@@ -135,9 +134,7 @@ function removeUser(username) {
 
     fetch(`/api/remove_user?username=${username}`, {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     })
         .then(response => response.text())
         .then(data => {
@@ -147,7 +144,6 @@ function removeUser(username) {
 
 function adjustLives(username, amount) {
     const token = localStorage.getItem('token');
-    console.log(`Using JWT Token in adjustLives: ${token}`);  // Debug print
     if (!token) {
         window.location.href = '/login';
         return;
@@ -155,9 +151,55 @@ function adjustLives(username, amount) {
 
     fetch(`/api/adjust_lives?username=${username}&amount=${amount}`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+        .then(response => response.text())
+        .then(data => {
+            fetchData();
+        });
+}
+
+function bulkBanUsers() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox:checked');
+    const usernames = Array.from(checkboxes).map(checkbox => checkbox.parentElement.dataset.username);
+
+    fetch('/api/bulk_ban', {
+        method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({ usernames: usernames })
+    })
+        .then(response => response.text())
+        .then(data => {
+            fetchData();
+        });
+}
+
+function bulkClearLives() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox:checked');
+    const usernames = Array.from(checkboxes).map(checkbox => checkbox.parentElement.dataset.username);
+
+    fetch('/api/bulk_clear', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ usernames: usernames })
     })
         .then(response => response.text())
         .then(data => {
@@ -167,7 +209,6 @@ function adjustLives(username, amount) {
 
 function banUser(username) {
     const token = localStorage.getItem('token');
-    console.log(`Using JWT Token in banUser: ${token}`);  // Debug print
     if (!token) {
         window.location.href = '/login';
         return;
@@ -175,9 +216,7 @@ function banUser(username) {
 
     fetch(`/api/ban_user?username=${username}`, {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
     })
         .then(response => response.text())
         .then(data => {
@@ -232,7 +271,6 @@ function updateQueueOrder() {
     const usernames = Array.from(queueItems).map(item => item.dataset.username);
 
     const token = localStorage.getItem('token');
-    console.log(`Using JWT Token in updateQueueOrder: ${token}`);  // Debug print
     if (!token) {
         window.location.href = '/login';
         return;
@@ -250,7 +288,6 @@ function updateQueueOrder() {
             fetchData();
         });
 
-    // Save the current order to localStorage
     saveQueueOrder(usernames);
 }
 
@@ -278,10 +315,8 @@ function spinQueue() {
     const newHighlightedUsers = chosenUsers.map(user => user.dataset.username);
     saveHighlightedUsers([...new Set([...highlightedUsers, ...newHighlightedUsers])]);
 
-    // Move chosen users to the top
     chosenUsers.forEach(user => queueList.prepend(user));
 
-    // Update the order in localStorage
     const currentOrder = Array.from(queueList.children).map(item => item.dataset.username);
     saveQueueOrder(currentOrder);
 }
@@ -317,6 +352,54 @@ function toggleHighlight(checkbox) {
     saveHighlightedUsers(highlightedUsers);
 }
 
-// Fetch data initially and set up auto-refresh
+function toggleSelectLivesUser(checkbox) {
+    const listItem = checkbox.parentElement;
+    const username = listItem.dataset.username;
+    const selectedLivesUsers = getSelectedLivesUsers();
+
+    if (checkbox.checked) {
+        if (!selectedLivesUsers.includes(username)) {
+            selectedLivesUsers.push(username);
+        }
+    } else {
+        const index = selectedLivesUsers.indexOf(username);
+        if (index !== -1) {
+            selectedLivesUsers.splice(index, 1);
+        }
+    }
+
+    saveSelectedLivesUsers(selectedLivesUsers);
+    toggleBulkButtons();
+}
+
+function toggleBulkButtons() {
+    const selectedLivesUsers = getSelectedLivesUsers();
+    const bulkBanBtn = document.querySelector('.bulk-ban-btn');
+    const bulkClearBtn = document.querySelector('.bulk-clear-btn');
+
+    bulkBanBtn.disabled = selectedLivesUsers.length === 0;
+    bulkClearBtn.disabled = selectedLivesUsers.length === 0;
+}
+
+function toggleSelectAllLives(checkbox) {
+    const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+        toggleSelectLivesUser(cb);
+    });
+    toggleBulkButtons();
+}
+
+function toggleView(listId) {
+    const list = document.getElementById(listId);
+    list.classList.toggle('grid-view');
+    const button = list.previousElementSibling;
+    if (list.classList.contains('grid-view')) {
+        button.textContent = 'List';
+    } else {
+        button.textContent = 'Grid';
+    }
+}
+
 fetchData();
 intervalId = setInterval(fetchData, refreshInterval);

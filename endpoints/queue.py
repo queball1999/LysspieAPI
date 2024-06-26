@@ -67,3 +67,4 @@ def manage_queue():
             return f"{username} is not in the queue!", 200
     else:
         return "invalid_action", 400
+    

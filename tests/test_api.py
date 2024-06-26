@@ -28,16 +28,16 @@ if __name__ == "__main__":
     
     test_username = "testuser"
     
-    for i in range (5):
+    for i in range (25):
         print("Testing join:")
         user = f"{test_username}{i}"
         test_join(user)
         time.sleep(1)
-    
+        
         print("\nTesting position:")
         test_position(user)
         time.sleep(1)
-    
+        """
         print("\nTesting skip:")
         test_skip()
         time.sleep(1)
@@ -45,9 +45,9 @@ if __name__ == "__main__":
         print("\nTesting leave:")
         test_leave(user)
         time.sleep(1)
+        """
     
     
-    
-    print("\nTesting nine lives:")
-    test_ninelives(test_username)
+        print("\nTesting nine lives:")
+        test_ninelives(user)
     
