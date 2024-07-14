@@ -1,6 +1,8 @@
 import os
+import secrets
 import socket
 import sys
+from datetime import timedelta
 from flask import Flask
 from dotenv import load_dotenv
 from flask.logging import create_logger
@@ -74,7 +76,10 @@ with app.app_context():
     try:
         db.create_all()
         if not User.query.filter_by(email=APP_DEFAULT_EMAIL).first():
-            default_user = User(email=APP_DEFAULT_EMAIL, password=APP_DEFAULT_PASSWORD)
+            api_key = 'q-' + secrets.token_hex(32)
+            print(api_key)
+            default_user = User(email=APP_DEFAULT_EMAIL, password=APP_DEFAULT_PASSWORD, api_key=api_key, role='admin')
+            print(default_user.password_hash, default_user.api_key)
             db.session.add(default_user)
             db.session.commit()
     except Exception as e:

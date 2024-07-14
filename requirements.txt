@@ -3,6 +3,7 @@ flask-login
 flask-jwt-extended 
 flask-bcrypt
 flask_sqlalchemy
+flask-socketio
 SQLAlchemy
 python-dotenv
 psycopg2

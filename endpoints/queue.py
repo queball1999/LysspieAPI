@@ -3,6 +3,7 @@ from datetime import datetime
 import re
 from functools import wraps
 from flask import jsonify, request, Blueprint
+#from .auth import verify_api_key
 
 # Import your local modules
 from .database import db
@@ -25,8 +26,9 @@ class Queue(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     
 
-@queue_bp.route('/queue', methods=['GET'])
+@queue_bp.route('/api/queue', methods=['GET'])
 def manage_queue():
+    print('QUEUE')
     action = request.args.get('action')
     username = request.args.get('username')
     
@@ -39,7 +41,7 @@ def manage_queue():
             db.session.add(new_user)
             db.session.commit()
             return f"{username} has joined the queue!", 200
-        except IntegrityError:
+        except:
             db.session.rollback()
             return f"{username} is already in the queue!", 200
     elif action == "leave":
@@ -67,4 +69,3 @@ def manage_queue():
             return f"{username} is not in the queue!", 200
     else:
         return "invalid_action", 400
-    

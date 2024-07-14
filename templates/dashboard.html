@@ -27,8 +27,8 @@
         <div class="avatar" onclick="toggleDropdown()">
             <span id="avatar-text"></span>
             <div class="dropdown-menu" id="dropdown-menu">
-                <a href="#">Settings</a>
-                <a href="#">Profile</a>
+                <a href="#" onclick="openSettings()">Settings</a>
+                <a href="#" onclick="openProfile()">Profile</a>
                 <a href="#">Help</a>
                 <a href="#" onclick="logout()">Logout</a>
             </div>
@@ -61,6 +61,49 @@
                 <ul id="lives-list" class="list">
                     <!-- Lives items will be inserted here by JavaScript -->
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <div class="settings-container">
+                <div class="settings-menu">
+                    <ul>
+                        <li onclick="showGeneralSettings()">General</li>
+                        <li onclick="showUserManagement()">User Management</li>
+                    </ul>
+                </div>
+                <div class="settings-content">
+                    <div id="general-settings" class="settings-section">
+                        <h3>General Settings</h3>
+                        <!-- Add general settings content here -->
+                    </div>
+                    <div id="user-management" class="settings-section">
+                        <h3>User Management</h3>
+                        <!-- Add user management content here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProfile()">&times;</span>
+            <div class="profile-container">
+                <h3>Profile</h3>
+                <label for="display-name">Display Name:</label>
+                <input type="text" id="display-name">
+                <label for="password">Password:</label>
+                <input type="password" id="password">
+                <label for="api-key">API Key:</label>
+                <input type="text" id="api-key" readonly>
+                <button onclick="resetApiKey()">Reset API Key</button>
+                <button onclick="saveProfile()">Save Changes</button>
             </div>
         </div>
     </div>

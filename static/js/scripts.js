@@ -401,5 +401,44 @@ function toggleView(listId) {
     }
 }
 
+function openSettings() {
+    document.getElementById('settings-modal').style.display = 'block';
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal').style.display = 'none';
+}
+
+function showGeneralSettings() {
+    document.getElementById('general-settings').style.display = 'block';
+    document.getElementById('user-management').style.display = 'none';
+}
+
+function showUserManagement() {
+    document.getElementById('general-settings').style.display = 'none';
+    document.getElementById('user-management').style.display = 'block';
+}
+
+function openProfile() {
+    document.getElementById('profile-modal').style.display = 'block';
+    const token = localStorage.getItem('token');
+    const email = atob(token.split('.')[1]);
+    const username = JSON.parse(email).sub;
+    document.getElementById('display-name').value = username;
+    // Fetch and set API key from server
+}
+
+function closeProfile() {
+    document.getElementById('profile-modal').style.display = 'none';
+}
+
+function resetApiKey() {
+    // API call to reset the API key and update the input field
+}
+
+function saveProfile() {
+    // API call to save the updated profile information
+}
+
 fetchData();
 intervalId = setInterval(fetchData, refreshInterval);

@@ -23,6 +23,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    api_key= db.Column(db.String(128), unique=True, nullable=False)
+    role = db.Column(db.String(50), nullable=False, default='viewer')
 
     @property
     def password(self):

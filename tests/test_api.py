@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE_URL = "http://172.18.240.1:5000"  # Change this if your Flask app is running on a different address
+BASE_URL = "http://192.168.4.41:5000/api"  # Change this if your Flask app is running on a different address
 
 def test_join(username):
     response = requests.get(f"{BASE_URL}/queue", params={"action": "join", "username": username})
@@ -46,7 +46,6 @@ if __name__ == "__main__":
         test_leave(user)
         time.sleep(1)
         """
-    
     
         print("\nTesting nine lives:")
         test_ninelives(user)
