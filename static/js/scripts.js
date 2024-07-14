@@ -1,5 +1,12 @@
 ﻿let refreshInterval = 5000; // Default to 5 seconds
 let intervalId;
+// Initialize socket connection
+const socket = io();
+
+socket.on('update', function(data) {
+    console.log(data.message);
+    fetchData(); // Refresh data on receiving an update
+});
 
 function getHighlightedUsers() {
     return JSON.parse(localStorage.getItem('highlightedUsers')) || [];
@@ -27,85 +34,92 @@ function saveSelectedLivesUsers(users) {
 
 function fetchData() {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
         window.location.href = '/login';
         return;
     }
 
-    fetch('/api/queue', {
-        headers: { 'Authorization': `Bearer ${token}` }
+    fetch('/queue', {
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        }
     })
-        .then(response => {
-            if (response.status === 401) {
-                window.location.href = '/login';
-            }
-            return response.json();
-        })
-        .then(data => {
-            const highlightedUsers = getHighlightedUsers();
-            const queueOrder = getQueueOrder();
-            const queueList = document.getElementById('queue-list');
-            queueList.innerHTML = '';
+    .then(response => {
+        if (response.status === 401) {
+            window.location.href = '/login';
+        }
+        return response.json();
+    })
+    .then(data => {
+        const highlightedUsers = getHighlightedUsers();
+        const queueOrder = getQueueOrder();
+        const queueList = document.getElementById('queue-list');
+        queueList.innerHTML = '';
 
-            const orderedQueue = data.queue.sort((a, b) => {
-                const indexA = queueOrder.indexOf(a.username);
-                const indexB = queueOrder.indexOf(b.username);
-                return (indexA === -1 ? queueOrder.length : indexA) - (indexB === -1 ? queueOrder.length : indexB);
-            });
+        const orderedQueue = data.queue.sort((a, b) => {
+            const indexA = queueOrder.indexOf(a.username);
+            const indexB = queueOrder.indexOf(b.username);
+            return (indexA === -1 ? queueOrder.length : indexA) - (indexB === -1 ? queueOrder.length : indexB);
+        });
 
-            orderedQueue.forEach(user => {
-                const li = document.createElement('li');
-                li.classList.add('draggable');
-                li.setAttribute('draggable', true);
-                li.dataset.username = user.username;
-                li.innerHTML = `
+        orderedQueue.forEach(user => {
+            const li = document.createElement('li');
+            li.classList.add('draggable');
+            li.setAttribute('draggable', true);
+            li.dataset.username = user.username;
+            li.innerHTML = `
                 <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${highlightedUsers.includes(user.username) ? 'checked' : ''}>
                 <span class="username">${user.username}</span>
                 <button class="remove-btn" onclick="removeUser('${user.username}')">x</button>
             `;
-                if (highlightedUsers.includes(user.username)) {
-                    li.classList.add('highlight');
-                }
-                queueList.appendChild(li);
-            });
-            addDragAndDropListeners();
+            if (highlightedUsers.includes(user.username)) {
+                li.classList.add('highlight');
+            }
+            queueList.appendChild(li);
         });
+        addDragAndDropListeners();
+    });
 
     fetch('/api/lives', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        }
     })
-        .then(response => {
-            if (response.status === 401) {
-                window.location.href = '/login';
-            }
-            return response.json();
-        })
-        .then(data => {
-            const livesList = document.getElementById('lives-list');
-            const selectedLivesUsers = getSelectedLivesUsers();
-            livesList.innerHTML = '';
-            data.lives.forEach(user => {
-                const li = document.createElement('li');
-                li.classList.add('draggable');
-                li.setAttribute('draggable', true);
-                li.dataset.username = user.username;
-                li.innerHTML = `
+    .then(response => {
+        if (response.status === 401) {
+            window.location.href = '/login';
+        }
+        return response.json();
+    })
+    .then(data => {
+        const livesList = document.getElementById('lives-list');
+        const selectedLivesUsers = getSelectedLivesUsers();
+        livesList.innerHTML = '';
+        data.lives.forEach(user => {
+            const li = document.createElement('li');
+            li.classList.add('draggable');
+            li.setAttribute('draggable', true);
+            li.dataset.username = user.username;
+            li.innerHTML = `
                 <input type="checkbox" class="highlight-checkbox" onchange="toggleSelectLivesUser(this)" ${selectedLivesUsers.includes(user.username) ? 'checked' : ''}>
                 <span class="username">${user.username} - ${user.lives} lives left</span>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', 1)">+1</button>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', -1)">-1</button>
             `;
-                livesList.appendChild(li);
-            });
-            toggleBulkButtons();
+            livesList.appendChild(li);
         });
+        toggleBulkButtons();
+    });
 }
 
 function setRefreshInterval() {
     const intervalSelect = document.getElementById('interval');
     refreshInterval = parseInt(intervalSelect.value, 10);
     clearInterval(intervalId);
-    intervalId = setInterval(fetchData, refreshInterval);
+    //intervalId = setInterval(fetchData, refreshInterval);
 }
 
 function cleanQueue() {
@@ -441,4 +455,4 @@ function saveProfile() {
 }
 
 fetchData();
-intervalId = setInterval(fetchData, refreshInterval);
+//intervalId = setInterval(fetchData, refreshInterval);

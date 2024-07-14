@@ -3,7 +3,9 @@ from datetime import datetime
 import re
 from functools import wraps
 from flask import jsonify, request, Blueprint
-#from .auth import verify_api_key
+from .socketio import *
+from .user import User
+#from .auth import api_key_required
 
 # Import your local modules
 from .database import db
@@ -27,19 +29,24 @@ class Queue(db.Model):
     
 
 @queue_bp.route('/api/queue', methods=['GET'])
+#@api_key_required
 def manage_queue():
     print('QUEUE')
     action = request.args.get('action')
     username = request.args.get('username')
+    print(action, username)
     
     if not action or not username:
         return "missing_parameters", 400
 
     if action == "join":
         try:
+            print('JOIN')
             new_user = Queue(username=username)
+            print(username, new_user)
             db.session.add(new_user)
             db.session.commit()
+            socketio.emit('update', {'message': 'Queue updated!'})
             return f"{username} has joined the queue!", 200
         except:
             db.session.rollback()
@@ -49,6 +56,7 @@ def manage_queue():
         if user:
             db.session.delete(user)
             db.session.commit()
+            socketio.emit('update', {'message': 'Queue updated!'})
             return f"{username} has left the queue!", 200
         else:
             return f"{username} is not in the queue!", 200
@@ -57,6 +65,7 @@ def manage_queue():
         if user:
             db.session.delete(user)
             db.session.commit()
+            socketio.emit('update', {'message': 'Queue updated!'})
             return f"{user.username} has skipped this round and will go next.", 200
         else:
             return "The queue is empty.", 200
@@ -69,3 +78,4 @@ def manage_queue():
             return f"{username} is not in the queue!", 200
     else:
         return "invalid_action", 400
+    

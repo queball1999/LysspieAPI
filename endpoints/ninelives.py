@@ -4,6 +4,7 @@ import re
 from functools import wraps
 from flask import jsonify, request, Blueprint
 from sqlalchemy.exc import IntegrityError
+from .socketio import *
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Import your local modules
@@ -40,6 +41,7 @@ def manage_ninelives():
         if user.lives <= 0:
             user.banned = True
             db.session.commit()
+            socketio.emit('update', {'message': 'Ninelives updated!'})
             return f"{username} has no lives left! Banning them from chat.", 200
         else:
             db.session.commit()
@@ -49,6 +51,7 @@ def manage_ninelives():
             new_user = NineLives(username=username, lives=8)
             db.session.add(new_user)
             db.session.commit()
+            socketio.emit('update', {'message': 'Ninelives updated!'})
             return f"{username} has 8 lives left.", 200
         except IntegrityError:
             db.session.rollback()

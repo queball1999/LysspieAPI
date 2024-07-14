@@ -20,7 +20,7 @@ def dashboard():
 def home():
     return redirect(url_for('auth.login'))
 
-@dashboard_bp.route('/api/queue', methods=['GET'])
+@dashboard_bp.route('/queue', methods=['GET'])
 @jwt_required()
 def get_queue():
     current_user = get_jwt_identity()

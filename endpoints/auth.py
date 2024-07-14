@@ -11,7 +11,7 @@ from .user import User
 auth_bp = Blueprint('auth', __name__)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-def verify_api_key(f):
+def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('X-API-KEY')
@@ -36,7 +36,7 @@ def login():
         if user and user.verify_password(data['password']):
             access_token = create_access_token(identity=user.email)
             print(f"Generated JWT Token: {access_token}")  # Debug print
-            return jsonify(access_token=access_token), 200
+            return jsonify(access_token=access_token, api_key=user.api_key), 200
         return jsonify({"msg": "Invalid credentials"}), 401
     return render_template('login.html')
 
