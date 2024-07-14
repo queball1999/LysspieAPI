@@ -7,9 +7,6 @@ from flask.logging import create_logger
 from flask_jwt_extended import JWTManager
 
 ##FIXME:
-# - Queue and lives columns need to max out at similar spacing towards botton and become scrollable
-# - All the queue controls need to move to the top?
-# - spin seems to shuffle the items, but not actually highlight any
 # - JWT timeout seems to work, but I need to make sure it only "starts" when there is no activity. basically with every user input, we can refresh timeout?
 #    - Remove revoking jwt when navigating away from page. Only want to do time based JWT.
 
