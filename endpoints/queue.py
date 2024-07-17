@@ -5,8 +5,8 @@ from functools import wraps
 from flask import jsonify, request, Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .socketio import *
-from .user import User
 from .auth import auth_required
+from .models import *
 
 # Import your local modules
 from .database import db
@@ -21,14 +21,6 @@ log_filepath = os.path.join(__location__, 'log', 'app.log')
 
 # Create a Flask Blueprint for clients
 queue_bp = Blueprint('queue', __name__)
-
-
-class Queue(db.Model):
-    __tablename__ = 'queue'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    position = db.Column(db.Integer, nullable=False, default=0)
-    highlighted = db.Column(db.Boolean, default=False)
     
 
 @queue_bp.route('/api/queue', methods=['GET'])

@@ -98,7 +98,7 @@ function fetchData() {
             li.innerHTML = `
                 <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${user.highlighted ? 'checked' : ''}>
                 <span class="username">${user.username}</span>
-                <button class="remove-btn" onclick="removeUser('${user.username}')">x</button>
+                <button class="remove-btn" onclick="openRemoveUserModal('${user.username}')">x</button>
             `;
             if (user.highlighted) {
                 li.classList.add('highlight');
@@ -168,21 +168,23 @@ function clearQueue() {
 
 /**
  * Remove a user from the queue
- * @param {string} username - Username of the user to remove
  */
-function removeUser(username) {
+function removeUser() {
     const token = localStorage.getItem('token');
+    const user = document.getElementById('remove-user-username').value;
+
     if (!token) {
         window.location.href = '/login';
         return;
     }
 
-    fetch(`/api/remove_user?username=${username}`, {
+    fetch(`/api/remove_user?username=${user}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
         .then(response => response.text())
         .then(data => {
+            closeRemoveUserModal();
             fetchData();
         });
 }
@@ -625,7 +627,17 @@ function openProfile() {
     const email = atob(token.split('.')[1]);
     const username = JSON.parse(email).sub;
     document.getElementById('display-name').value = username;
+    
     // Fetch and set API key from server
+    fetch('/api/get_api_key', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('api-key').value = data.api_key;
+    });
 }
 
 /**
@@ -633,6 +645,76 @@ function openProfile() {
  */
 function closeProfile() {
     document.getElementById('profile-modal').style.display = 'none';
+}
+
+/**
+ * Clear the password field when focused
+ */
+function clearPassword() {
+    document.getElementById('password').value = '';
+}
+
+/**
+ * Upload avatar image
+ */
+function uploadAvatar() {
+    const fileInput = document.getElementById('avatar-upload');
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    fetch('/api/upload_avatar', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('profile-avatar').src = data.avatar_url;
+    });
+}
+
+/**
+ * Reset the API key
+ */
+function resetApiKey() {
+    const token = localStorage.getItem('token');
+
+    fetch('/api/reset_api_key', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('api-key').value = data.api_key;
+    });
+}
+
+/**
+ * Save the profile information
+ */
+function saveProfile() {
+    const displayName = document.getElementById('display-name').value;
+    const password = document.getElementById('password').value;
+    const apiKey = document.getElementById('api-key').value;
+
+    fetch('/api/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ display_name: displayName, password: password !== '••••••••' ? password : '', api_key: apiKey })
+    })
+    .then(response => response.json())
+    .then(data => {
+        closeProfile();
+        fetchData();
+    });
 }
 
 /**
@@ -663,18 +745,17 @@ function closeClearLivesModal() {
     document.getElementById('clear-lives-modal').style.display = 'none';
 }
 
-/**
- * Reset the API key
- */
-function resetApiKey() {
-    // API call to reset the API key and update the input field
+// Function to open the remove user confirmation modal
+function openRemoveUserModal(username) {
+    document.getElementById('remove-user-username').value = `${username}`;
+    document.getElementById('remove-user-message').textContent = `Are you sure you want to remove ${username} from the queue? This action cannot be undone.`;
+    document.getElementById('remove-user-modal').style.display = 'block';
 }
 
-/**
- * Save the profile information
- */
-function saveProfile() {
-    // API call to save the updated profile information
+// Function to close the remove user confirmation modal
+function closeRemoveUserModal() {
+    userToRemove = null;
+    document.getElementById('remove-user-modal').style.display = 'none';
 }
 
 /**

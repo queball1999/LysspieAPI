@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from .socketio import *
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .auth import auth_required
+from .models import *
 
 # Import your local modules
 from .database import db
@@ -21,15 +22,6 @@ log_filepath = os.path.join(__location__, 'log', 'app.log')
 
 # Create a Flask Blueprint for clients
 ninelives_bp = Blueprint('ninelives', __name__)
-
-class NineLives(db.Model):
-    __tablename__ = 'ninelives'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    lives = db.Column(db.Integer, default=9)
-    banned = db.Column(db.Boolean, default=False)
-    position = db.Column(db.Integer, nullable=False, default=0)
-    highlighted = db.Column(db.Boolean, default=False)
 
 @ninelives_bp.route('/api/ninelives', methods=['GET'])
 @auth_required
