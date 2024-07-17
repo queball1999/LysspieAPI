@@ -26,6 +26,17 @@ body {
     display: block;
 }
 
+.right-controls {
+    display: flex;
+    align-items: center;
+}
+
+.refresh {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
 .avatar {
     width: 40px;
     height: 40px;
@@ -62,17 +73,6 @@ body {
 
 .dropdown-menu a:hover {
     background-color: #f0f0f0;
-}
-
-.controls {
-    display: flex;
-    align-items: center;
-    margin-right: 15px;
-}
-
-.refresh-interval {
-    display: flex;
-    align-items: center;
 }
 
 .container {
@@ -176,6 +176,58 @@ body {
     background-color: #f0f0f0;
 }
 
+/* login screen style */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: #45a049;
+}
+
+.login-container .show-password-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 25px;
+}
+
 /* Custom scrollbar styles */
 .queue-container::-webkit-scrollbar,
 .lives-container::-webkit-scrollbar {
@@ -200,25 +252,26 @@ body {
 
 /* Modal styles */
 .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1001; 
-    left: 0; 
-    top: 0; 
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgb(0,0,0); 
-    background-color: rgba(0,0,0,0.4); 
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
 .modal-content {
     background-color: #fefefe;
-    margin: 15% auto; 
+    margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; 
-    border-radius: 10px;
+    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .close {

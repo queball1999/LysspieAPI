@@ -1,11 +1,16 @@
-﻿let refreshInterval = 5000; // Default to 5 seconds
-let intervalId;
+﻿let intervalId;
+let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minuites
+let timeoutWarning = 60000; // Set to 1 minute timeout
+let activityTimeout;
+
 // Initialize socket connection
 const socket = io();
 
+// This socket enables SSE, which forcible refreshes the page
 socket.on('update', function(data) {
     console.log(data.message);
     fetchData(); // Refresh data on receiving an update
+    resetActivityTimeout();
 });
 
 function getHighlightedUsers() {
@@ -113,13 +118,6 @@ function fetchData() {
         });
         toggleBulkButtons();
     });
-}
-
-function setRefreshInterval() {
-    const intervalSelect = document.getElementById('interval');
-    refreshInterval = parseInt(intervalSelect.value, 10);
-    clearInterval(intervalId);
-    //intervalId = setInterval(fetchData, refreshInterval);
 }
 
 function cleanQueue() {
@@ -454,5 +452,42 @@ function saveProfile() {
     // API call to save the updated profile information
 }
 
+// Function to open the session continuation modal
+function openSessionModal() {
+    document.getElementById('session-modal').style.display = 'block';
+
+    // Start another timer to log out the user if no action is taken
+    const logoutTimeout = setTimeout(() => {
+        if (document.getElementById('session-modal').style.display === 'block') {
+            logout();
+        }
+    }, timeoutWarning); // Remaining time to log out
+}
+
+// Function to close the session continuation modal
+function closeSessionModal() {
+    document.getElementById('session-modal').style.display = 'none';
+}
+
+// Function to continue the session
+function continueSession() {
+    closeSessionModal();
+    resetActivityTimeout();
+}
+
+// Function to reset the activity timeout
+function resetActivityTimeout() {
+    clearTimeout(activityTimeout);
+    activityTimeout = setTimeout(() => {
+        openSessionModal();
+    }, timeoutDuration - timeoutWarning);
+}
+
+document.addEventListener('mousemove', resetActivityTimeout);
+document.addEventListener('keypress', resetActivityTimeout);
+document.addEventListener('mousedown', resetActivityTimeout); // for mobile
+document.addEventListener('touchstart', resetActivityTimeout); // for mobile
+document.addEventListener('scroll', resetActivityTimeout);
+
 fetchData();
-//intervalId = setInterval(fetchData, refreshInterval);
+resetActivityTimeout();

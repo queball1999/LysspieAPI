@@ -7,9 +7,6 @@ from flask import Flask
 from dotenv import load_dotenv
 from flask.logging import create_logger
 from flask_jwt_extended import JWTManager
-##FIXME:
-# - JWT timeout seems to work, but I need to make sure it only "starts" when there is no activity. basically with every user input, we can refresh timeout?
-#    - Remove revoking jwt when navigating away from page. Only want to do time based JWT.
 
 # Custom module imports
 from endpoints import *

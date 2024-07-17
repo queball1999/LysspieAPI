@@ -5,7 +5,7 @@ from functools import wraps
 from flask import jsonify, request, Blueprint
 from .socketio import *
 from .user import User
-#from .auth import api_key_required
+from .auth import api_key_required
 
 # Import your local modules
 from .database import db
@@ -29,7 +29,7 @@ class Queue(db.Model):
     
 
 @queue_bp.route('/api/queue', methods=['GET'])
-#@api_key_required
+@api_key_required
 def manage_queue():
     print('QUEUE')
     action = request.args.get('action')

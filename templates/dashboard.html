@@ -13,25 +13,19 @@
         <a href="#" class="site-title-icon">
             <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Home">
         </a>
-        <div class="controls">
-            <div class="refresh-interval">
+        <div class="right-controls">
+            <div class="refresh">
                 <button onclick="fetchData()">Refresh</button>
-                <select id="interval" onchange="setRefreshInterval()">
-                    <option value="1000">1 Second</option>
-                    <option value="5000" selected>5 Seconds</option>
-                    <option value="10000">10 Seconds</option>
-                    <option value="30000">30 Seconds</option>
-                    <option value="60000">1 Minute</option>
-                </select>
             </div>
-        </div>
-        <div class="avatar" onclick="toggleDropdown()">
-            <span id="avatar-text"></span>
-            <div class="dropdown-menu" id="dropdown-menu">
-                <a href="#" onclick="openSettings()">Settings</a>
-                <a href="#" onclick="openProfile()">Profile</a>
-                <a href="#">Help</a>
-                <a href="#" onclick="logout()">Logout</a>
+        
+            <div class="avatar" onclick="toggleDropdown()">
+                <span id="avatar-text"></span>
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#" onclick="openSettings()">Settings</a>
+                    <a href="#" onclick="openProfile()">Profile</a>
+                    <a href="#">Help</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </div>
             </div>
         </div>
     </div>
@@ -109,6 +103,16 @@
         </div>
     </div>
 
+    <!-- Session Continuation Modal -->
+    <div id="session-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSessionModal()">&times;</span>
+            <p>Your session is about to expire. Do you want to continue your session?</p>
+            <button onclick="continueSession()">Yes</button>
+            <button onclick="logout()">No</button>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     <script>
         const token = localStorage.getItem('token');
@@ -123,6 +127,7 @@
 
         function logout() {
             localStorage.removeItem('token');
+            localStorage.removeItem('api_key');
             window.location.href = '/login';
         }
 
