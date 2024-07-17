@@ -8,8 +8,6 @@ from .socketio import *
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .auth import auth_required
 from .models import *
-
-# Import your local modules
 from .database import db
 
 # Get the current file's location
@@ -23,12 +21,17 @@ log_filepath = os.path.join(__location__, 'log', 'app.log')
 # Create a Flask Blueprint for clients
 ninelives_bp = Blueprint('ninelives', __name__)
 
+def validate_username(username):
+    if not re.match(r'^[a-zA-Z0-9_.-]+$', username):
+        return False
+    return True
+
 @ninelives_bp.route('/api/ninelives', methods=['GET'])
 @auth_required
 def manage_ninelives():
     username = request.args.get('username')
     
-    if not username:
+    if not username or not validate_username(username):
         return "missing_parameters", 400
     
     user = NineLives.query.filter_by(username=username).first()
@@ -61,6 +64,8 @@ def bulk_ban():
     usernames = data.get('usernames', [])
     
     for username in usernames:
+        if not validate_username(username):
+            return "Invalid username format", 400
         user = NineLives.query.filter_by(username=username).first()
         if user:
             user.banned = True
@@ -71,12 +76,13 @@ def bulk_ban():
 @ninelives_bp.route('/api/clear_lives', methods=['POST'])
 @auth_required
 def clear_lives():
-    print('CLEAR LIVES')
     current_user = get_jwt_identity()
     data = request.get_json()
     usernames = data.get('usernames', [])
-    print(current_user, data, usernames)
+    
     for username in usernames:
+        if not validate_username(username):
+            return "Invalid username format", 400
         user = NineLives.query.filter_by(username=username).first()
         if user:
             db.session.delete(user)
@@ -89,6 +95,8 @@ def clear_lives():
 def ban_user():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+    if not validate_username(username):
+        return "Invalid username format", 400
     user = NineLives.query.filter_by(username=username).first()
     if user:
         user.banned = True
@@ -102,6 +110,8 @@ def ban_user():
 def remove_user():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+    if not validate_username(username):
+        return "Invalid username format", 400
     user = NineLives.query.filter_by(username=username).first()
     if user:
         db.session.delete(user)
@@ -122,6 +132,8 @@ def get_lives():
 def adjust_lives():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+    if not validate_username(username):
+        return "Invalid username format", 400
     amount = int(request.args.get('amount'))
     user = NineLives.query.filter_by(username=username).first()
     if user:
@@ -141,6 +153,8 @@ def update_lives_order():
     order = data.get('order', [])
     
     for position, username in enumerate(order):
+        if not validate_username(username):
+            return "Invalid username format", 400
         user = NineLives.query.filter_by(username=username).first()
         if user:
             user.position = position
@@ -157,6 +171,10 @@ def update_lives_order():
 def update_highlighted_lives():
     data = request.get_json()
     highlighted_users = data.get('highlighted_users', [])
+    
+    for username in highlighted_users:
+        if not validate_username(username):
+            return "Invalid username format", 400
     
     for user in NineLives.query.all():
         user.highlighted = user.username in highlighted_users

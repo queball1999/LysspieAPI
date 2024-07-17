@@ -7,8 +7,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from .socketio import *
 from .auth import auth_required
 from .models import *
-
-# Import your local modules
 from .database import db
 
 # Get the current file's location
@@ -21,7 +19,11 @@ log_filepath = os.path.join(__location__, 'log', 'app.log')
 
 # Create a Flask Blueprint for clients
 queue_bp = Blueprint('queue', __name__)
-    
+
+def validate_username(username):
+    if not re.match(r'^[a-zA-Z0-9_.-]+$', username):
+        return False
+    return True
 
 @queue_bp.route('/api/queue', methods=['GET'])
 @auth_required
@@ -29,7 +31,7 @@ def manage_queue():
     action = request.args.get('action')
     username = request.args.get('username')
     
-    if not action or not username:
+    if not action or not username or not validate_username(username):
         return "missing_parameters", 400
 
     if action == "join":
@@ -69,7 +71,7 @@ def manage_queue():
             return f"{username} is not in the queue!", 200
     else:
         return "invalid_action", 400
-    
+
 @queue_bp.route('/api/clear_queue', methods=['POST'])
 @auth_required
 def clean_queue():
@@ -84,6 +86,8 @@ def clean_queue():
 def remove_user():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+    if not validate_username(username):
+        return "Invalid username format", 400
     user = Queue.query.filter_by(username=username).first()
     if user:
         db.session.delete(user)
@@ -99,6 +103,8 @@ def update_queue_order():
     order = data.get('order', [])
     
     for position, username in enumerate(order):
+        if not validate_username(username):
+            return "Invalid username format", 400
         user = Queue.query.filter_by(username=username).first()
         if user:
             user.position = position
@@ -115,6 +121,10 @@ def update_queue_order():
 def update_highlighted_users():
     data = request.get_json()
     highlighted_users = data.get('highlighted_users', [])
+    
+    for username in highlighted_users:
+        if not validate_username(username):
+            return "Invalid username format", 400
     
     for user in Queue.query.all():
         user.highlighted = user.username in highlighted_users
