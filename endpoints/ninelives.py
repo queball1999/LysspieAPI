@@ -69,6 +69,7 @@ def bulk_ban():
         if user:
             user.banned = True
     db.session.commit()
+    socketio.emit('update', {'message': 'Queue updated!'})
     return "Users banned successfully", 200
 
 @ninelives_bp.route('/api/bulk_clear', methods=['POST'])
@@ -83,6 +84,7 @@ def bulk_clear():
         if user:
             db.session.delete(user)
     db.session.commit()
+    socketio.emit('update', {'message': 'Queue updated!'})
     return "Lives cleared successfully", 200
 
 @ninelives_bp.route('/api/ban_user', methods=['POST'])
@@ -94,6 +96,7 @@ def ban_user():
     if user:
         user.banned = True
         db.session.commit()
+        socketio.emit('update', {'message': 'Queue updated!'})
         return "User banned successfully", 200
     return "User not found", 404
 
@@ -109,7 +112,36 @@ def remove_user():
         return "User removed successfully", 200
     return "User not found", 404
 
+@ninelives_bp.route('/api/lives', methods=['GET'])
+@jwt_required()
+def get_lives():
+    current_user = get_jwt_identity()
+    lives_list = NineLives.query.order_by(NineLives.id).all()
+    lives_data = [{"username": user.username, "lives": user.lives} for user in lives_list]
+    return jsonify({"lives": lives_data})
+
 @ninelives_bp.route('/api/adjust_lives', methods=['POST'])
+@jwt_required()
+def adjust_lives():
+    current_user = get_jwt_identity()
+    username = request.args.get('username')
+    amount = int(request.args.get('amount'))
+    user = NineLives.query.filter_by(username=username).first()
+    if user:
+        user.lives += amount
+        if user.lives <= 0:
+            user.banned = True
+            user.lives = 0
+        db.session.commit()
+        socketio.emit('update', {'message': 'Queue updated!'})
+        return f"User {username} now has {user.lives} lives", 200
+    return "User not found", 404
+
+
+
+# From dashboard.py
+"""
+@dashboard_bp.route('/api/adjust_lives', methods=['POST'])
 @jwt_required()
 def adjust_lives():
     current_user = get_jwt_identity()
@@ -124,3 +156,16 @@ def adjust_lives():
         db.session.commit()
         return f"User {username} now has {user.lives} lives", 200
     return "User not found", 404
+
+@dashboard_bp.route('/api/ban_user', methods=['POST'])
+@jwt_required()
+def ban_user():
+    current_user = get_jwt_identity()
+    username = request.args.get('username')
+    user = NineLives.query.filter_by(username=username).first()
+    if user:
+        user.banned = True
+        db.session.commit()
+        return f"User {username} banned", 200
+    return "User not found", 404
+"""

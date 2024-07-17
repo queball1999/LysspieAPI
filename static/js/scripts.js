@@ -1,42 +1,74 @@
-﻿let intervalId;
-let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minuites
+﻿/**
+ * Initialize necessary variables
+ */
+let intervalId;
+let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minutes
 let timeoutWarning = 60000; // Set to 1 minute timeout
 let activityTimeout;
 
 // Initialize socket connection
 const socket = io();
 
-// This socket enables SSE, which forcible refreshes the page
+/**
+ * Handle server-sent events (SSE) to refresh data on receiving an update
+ */
 socket.on('update', function(data) {
     console.log(data.message);
     fetchData(); // Refresh data on receiving an update
     resetActivityTimeout();
 });
 
+/**
+ * Retrieve highlighted users from local storage
+ * @returns {Array} - List of highlighted users
+ */
 function getHighlightedUsers() {
     return JSON.parse(localStorage.getItem('highlightedUsers')) || [];
 }
 
+/**
+ * Save highlighted users to local storage
+ * @param {Array} users - List of highlighted users
+ */
 function saveHighlightedUsers(users) {
     localStorage.setItem('highlightedUsers', JSON.stringify(users));
 }
 
+/**
+ * Retrieve queue order from local storage
+ * @returns {Array} - List of queue order
+ */
 function getQueueOrder() {
     return JSON.parse(localStorage.getItem('queueOrder')) || [];
 }
 
+/**
+ * Save queue order to local storage
+ * @param {Array} order - List of queue order
+ */
 function saveQueueOrder(order) {
     localStorage.setItem('queueOrder', JSON.stringify(order));
 }
 
+/**
+ * Retrieve selected lives users from local storage
+ * @returns {Array} - List of selected lives users
+ */
 function getSelectedLivesUsers() {
     return JSON.parse(localStorage.getItem('selectedLivesUsers')) || [];
 }
 
+/**
+ * Save selected lives users to local storage
+ * @param {Array} users - List of selected lives users
+ */
 function saveSelectedLivesUsers(users) {
     localStorage.setItem('selectedLivesUsers', JSON.stringify(users));
 }
 
+/**
+ * Fetch data from the server and update the UI
+ */
 function fetchData() {
     const token = localStorage.getItem('token');
     const apiKey = localStorage.getItem('api_key');
@@ -45,6 +77,7 @@ function fetchData() {
         return;
     }
 
+    // Fetch queue data
     fetch('/queue', {
         headers: { 
             'Authorization': `Bearer ${token}`,
@@ -87,6 +120,7 @@ function fetchData() {
         addDragAndDropListeners();
     });
 
+    // Fetch lives data
     fetch('/api/lives', {
         headers: { 
             'Authorization': `Bearer ${token}`,
@@ -120,14 +154,17 @@ function fetchData() {
     });
 }
 
-function cleanQueue() {
+/**
+ * Clear the queue
+ */
+function clearQueue() {
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = '/login';
         return;
     }
 
-    fetch('/api/clean_queue', {
+    fetch('/api/clear_queue', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -137,6 +174,10 @@ function cleanQueue() {
         });
 }
 
+/**
+ * Remove a user from the queue
+ * @param {string} username - Username of the user to remove
+ */
 function removeUser(username) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -154,6 +195,11 @@ function removeUser(username) {
         });
 }
 
+/**
+ * Adjust the number of lives for a user
+ * @param {string} username - Username of the user
+ * @param {number} amount - Amount to adjust the lives by
+ */
 function adjustLives(username, amount) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -171,6 +217,9 @@ function adjustLives(username, amount) {
         });
 }
 
+/**
+ * Bulk ban users
+ */
 function bulkBanUsers() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -195,6 +244,9 @@ function bulkBanUsers() {
         });
 }
 
+/**
+ * Bulk clear lives for users
+ */
 function bulkClearLives() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -219,6 +271,10 @@ function bulkClearLives() {
         });
 }
 
+/**
+ * Ban a user
+ * @param {string} username - Username of the user to ban
+ */
 function banUser(username) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -236,6 +292,9 @@ function banUser(username) {
         });
 }
 
+/**
+ * Add drag and drop listeners to the draggable elements
+ */
 function addDragAndDropListeners() {
     const draggables = document.querySelectorAll('.draggable');
     const queueList = document.getElementById('queue-list');
@@ -263,6 +322,12 @@ function addDragAndDropListeners() {
     });
 }
 
+/**
+ * Get the element to insert the dragged item after
+ * @param {HTMLElement} container - The container element
+ * @param {number} y - The y-coordinate of the drag event
+ * @returns {HTMLElement} - The element to insert after
+ */
 function getDragAfterElement(container, y) {
     const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
 
@@ -277,6 +342,9 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
+/**
+ * Update the queue order and save it
+ */
 function updateQueueOrder() {
     const queueList = document.getElementById('queue-list');
     const queueItems = queueList.querySelectorAll('.draggable');
@@ -303,6 +371,9 @@ function updateQueueOrder() {
     saveQueueOrder(usernames);
 }
 
+/**
+ * Spin the queue to select random users
+ */
 function spinQueue() {
     const spinCount = parseInt(document.getElementById('spin-count').value);
     const queueList = document.getElementById('queue-list');
@@ -333,6 +404,9 @@ function spinQueue() {
     saveQueueOrder(currentOrder);
 }
 
+/**
+ * Clear the spin highlight
+ */
 function clearSpin() {
     const highlightedUsers = document.querySelectorAll('.highlight');
     highlightedUsers.forEach(user => {
@@ -343,6 +417,10 @@ function clearSpin() {
     saveQueueOrder([]);
 }
 
+/**
+ * Toggle highlight for a user
+ * @param {HTMLElement} checkbox - The checkbox element
+ */
 function toggleHighlight(checkbox) {
     const listItem = checkbox.parentElement;
     const username = listItem.dataset.username;
@@ -364,6 +442,10 @@ function toggleHighlight(checkbox) {
     saveHighlightedUsers(highlightedUsers);
 }
 
+/**
+ * Toggle select lives user
+ * @param {HTMLElement} checkbox - The checkbox element
+ */
 function toggleSelectLivesUser(checkbox) {
     const listItem = checkbox.parentElement;
     const username = listItem.dataset.username;
@@ -384,6 +466,9 @@ function toggleSelectLivesUser(checkbox) {
     toggleBulkButtons();
 }
 
+/**
+ * Toggle bulk buttons based on the selected lives users
+ */
 function toggleBulkButtons() {
     const selectedLivesUsers = getSelectedLivesUsers();
     const bulkBanBtn = document.querySelector('.bulk-ban-btn');
@@ -393,6 +478,10 @@ function toggleBulkButtons() {
     bulkClearBtn.disabled = selectedLivesUsers.length === 0;
 }
 
+/**
+ * Toggle select all lives users
+ * @param {HTMLElement} checkbox - The checkbox element
+ */
 function toggleSelectAllLives(checkbox) {
     const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox');
     checkboxes.forEach(cb => {
@@ -402,6 +491,10 @@ function toggleSelectAllLives(checkbox) {
     toggleBulkButtons();
 }
 
+/**
+ * Toggle the view between list and grid
+ * @param {string} listId - The ID of the list element
+ */
 function toggleView(listId) {
     const list = document.getElementById(listId);
     list.classList.toggle('grid-view');
@@ -413,24 +506,39 @@ function toggleView(listId) {
     }
 }
 
+/**
+ * Open the settings modal
+ */
 function openSettings() {
     document.getElementById('settings-modal').style.display = 'block';
 }
 
+/**
+ * Close the settings modal
+ */
 function closeSettings() {
     document.getElementById('settings-modal').style.display = 'none';
 }
 
+/**
+ * Show the general settings section
+ */
 function showGeneralSettings() {
     document.getElementById('general-settings').style.display = 'block';
     document.getElementById('user-management').style.display = 'none';
 }
 
+/**
+ * Show the user management section
+ */
 function showUserManagement() {
     document.getElementById('general-settings').style.display = 'none';
     document.getElementById('user-management').style.display = 'block';
 }
 
+/**
+ * Open the profile modal
+ */
 function openProfile() {
     document.getElementById('profile-modal').style.display = 'block';
     const token = localStorage.getItem('token');
@@ -440,19 +548,30 @@ function openProfile() {
     // Fetch and set API key from server
 }
 
+/**
+ * Close the profile modal
+ */
 function closeProfile() {
     document.getElementById('profile-modal').style.display = 'none';
 }
 
+/**
+ * Reset the API key
+ */
 function resetApiKey() {
     // API call to reset the API key and update the input field
 }
 
+/**
+ * Save the profile information
+ */
 function saveProfile() {
     // API call to save the updated profile information
 }
 
-// Function to open the session continuation modal
+/**
+ * Open the session continuation modal
+ */
 function openSessionModal() {
     document.getElementById('session-modal').style.display = 'block';
 
@@ -464,18 +583,24 @@ function openSessionModal() {
     }, timeoutWarning); // Remaining time to log out
 }
 
-// Function to close the session continuation modal
+/**
+ * Close the session continuation modal
+ */
 function closeSessionModal() {
     document.getElementById('session-modal').style.display = 'none';
 }
 
-// Function to continue the session
+/**
+ * Continue the session by closing the modal and resetting the activity timeout
+ */
 function continueSession() {
     closeSessionModal();
     resetActivityTimeout();
 }
 
-// Function to reset the activity timeout
+/**
+ * Reset the activity timeout
+ */
 function resetActivityTimeout() {
     clearTimeout(activityTimeout);
     activityTimeout = setTimeout(() => {
@@ -483,11 +608,13 @@ function resetActivityTimeout() {
     }, timeoutDuration - timeoutWarning);
 }
 
+// Event listeners to reset activity timeout on various user actions
 document.addEventListener('mousemove', resetActivityTimeout);
 document.addEventListener('keypress', resetActivityTimeout);
 document.addEventListener('mousedown', resetActivityTimeout); // for mobile
 document.addEventListener('touchstart', resetActivityTimeout); // for mobile
 document.addEventListener('scroll', resetActivityTimeout);
 
+// Initial data fetch and activity timeout reset
 fetchData();
 resetActivityTimeout();

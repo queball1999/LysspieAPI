@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE_URL = "http://192.168.4.41:5000/api"  # Change this if your Flask app is running on a different address
+BASE_URL = "http://192.168.4.142:5000/api"  # Change this if your Flask app is running on a different address
 API_KEY = 'q-43bdf3bdd21c6ef7447a16987aa68d9b390e13668fcf3a178554038b1b9551de'  # Replace with your actual API key
 JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyMDk5NzUxMywianRpIjoiM2QyODM5ZDMtZTc0NS00ZWQ1LWFhYzMtMTUxNGFjNzhiYWIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluQGV4YW1wbGUuY29tIiwibmJmIjoxNzIwOTk3NTEzLCJjc3JmIjoiMGZhYThlZjktMDgzNS00NDAwLThhNDAtYzVmNzI4ZmE1NGQwIiwiZXhwIjoxNzIxMDAxMTEzfQ.GjBnEix7eRS4Wfbqq5tm7dIZu4oUSC1bl2laP41KEEw'  # Replace with your actual JWT token
 
@@ -50,8 +50,8 @@ if __name__ == "__main__":
         test_skip()
         time.sleep(1)
         """
-        print("\nTesting leave:")
-        test_leave(user)
+        #print("\nTesting leave:")
+        #test_leave(user)
     
         print("\nTesting nine lives:")
         test_ninelives(user)
