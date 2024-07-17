@@ -27,6 +27,8 @@ class NineLives(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     lives = db.Column(db.Integer, default=9)
     banned = db.Column(db.Boolean, default=False)
+    position = db.Column(db.Integer, nullable=False, default=0)
+    highlighted = db.Column(db.Boolean, default=False)
 
 @ninelives_bp.route('/api/ninelives', methods=['GET'])
 def manage_ninelives():
@@ -137,35 +139,40 @@ def adjust_lives():
         return f"User {username} now has {user.lives} lives", 200
     return "User not found", 404
 
-
-
-# From dashboard.py
-"""
-@dashboard_bp.route('/api/adjust_lives', methods=['POST'])
+@ninelives_bp.route('/api/update_lives_order', methods=['POST'])
 @jwt_required()
-def adjust_lives():
-    current_user = get_jwt_identity()
-    username = request.args.get('username')
-    amount = int(request.args.get('amount'))
-    user = NineLives.query.filter_by(username=username).first()
-    if user:
-        user.lives += amount
-        if user.lives <= 0:
-            user.banned = True
-            user.lives = 0
-        db.session.commit()
-        return f"User {username} now has {user.lives} lives", 200
-    return "User not found", 404
+def update_lives_order():
+    data = request.get_json()
+    order = data.get('order', [])
+    
+    for position, username in enumerate(order):
+        user = NineLives.query.filter_by(username=username).first()
+        if user:
+            user.position = position
+        else:
+            new_user = NineLives(username=username, position=position)
+            db.session.add(new_user)
+    db.session.commit()
+    socketio.emit('update', {'message': 'Lives order updated!'})
+    return jsonify({'msg': 'Lives order updated successfully'}), 200
 
-@dashboard_bp.route('/api/ban_user', methods=['POST'])
+@ninelives_bp.route('/api/update_highlighted_lives', methods=['POST'])
 @jwt_required()
-def ban_user():
-    current_user = get_jwt_identity()
-    username = request.args.get('username')
-    user = NineLives.query.filter_by(username=username).first()
-    if user:
-        user.banned = True
-        db.session.commit()
-        return f"User {username} banned", 200
-    return "User not found", 404
-"""
+def update_highlighted_lives():
+    data = request.get_json()
+    highlighted_users = data.get('highlighted_users', [])
+    
+    for user in NineLives.query.all():
+        user.highlighted = user.username in highlighted_users
+    
+    db.session.commit()
+    socketio.emit('update', {'message': 'Highlighted lives updated!'})
+    return jsonify({'msg': 'Highlighted lives updated successfully'}), 200
+
+@ninelives_bp.route('/api/get_lives_order', methods=['GET'])
+@jwt_required()
+def get_lives_order():
+    lives_order = NineLives.query.order_by(NineLives.position).all()
+    return jsonify({
+        'lives_order': [{'username': user.username, 'highlighted': user.highlighted, 'lives': user.lives} for user in lives_order]
+    }), 200

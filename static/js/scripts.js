@@ -77,80 +77,67 @@ function fetchData() {
         return;
     }
 
-    // Fetch queue data
-    fetch('/queue', {
+    // Fetch queue order
+    fetch('/api/get_queue_order', {
         headers: { 
             'Authorization': `Bearer ${token}`,
             'X-API-KEY': apiKey
         }
     })
-    .then(response => {
-        if (response.status === 401) {
-            window.location.href = '/login';
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        const highlightedUsers = getHighlightedUsers();
-        const queueOrder = getQueueOrder();
+        const queueOrder = data.queue_order;
         const queueList = document.getElementById('queue-list');
         queueList.innerHTML = '';
 
-        const orderedQueue = data.queue.sort((a, b) => {
-            const indexA = queueOrder.indexOf(a.username);
-            const indexB = queueOrder.indexOf(b.username);
-            return (indexA === -1 ? queueOrder.length : indexA) - (indexB === -1 ? queueOrder.length : indexB);
-        });
-
-        orderedQueue.forEach(user => {
+        queueOrder.forEach(user => {
             const li = document.createElement('li');
             li.classList.add('draggable');
             li.setAttribute('draggable', true);
             li.dataset.username = user.username;
             li.innerHTML = `
-                <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${highlightedUsers.includes(user.username) ? 'checked' : ''}>
+                <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${user.highlighted ? 'checked' : ''}>
                 <span class="username">${user.username}</span>
                 <button class="remove-btn" onclick="removeUser('${user.username}')">x</button>
             `;
-            if (highlightedUsers.includes(user.username)) {
+            if (user.highlighted) {
                 li.classList.add('highlight');
             }
             queueList.appendChild(li);
         });
-        addDragAndDropListeners();
+        addDragAndDropListeners('queue-list');
     });
 
-    // Fetch lives data
-    fetch('/api/lives', {
+    // Fetch lives order
+    fetch('/api/get_lives_order', {
         headers: { 
             'Authorization': `Bearer ${token}`,
             'X-API-KEY': apiKey
         }
     })
-    .then(response => {
-        if (response.status === 401) {
-            window.location.href = '/login';
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
+        const livesOrder = data.lives_order;
         const livesList = document.getElementById('lives-list');
-        const selectedLivesUsers = getSelectedLivesUsers();
         livesList.innerHTML = '';
-        data.lives.forEach(user => {
+
+        livesOrder.forEach(user => {
             const li = document.createElement('li');
             li.classList.add('draggable');
             li.setAttribute('draggable', true);
             li.dataset.username = user.username;
             li.innerHTML = `
-                <input type="checkbox" class="highlight-checkbox" onchange="toggleSelectLivesUser(this)" ${selectedLivesUsers.includes(user.username) ? 'checked' : ''}>
+                <input type="checkbox" class="highlight-checkbox" onchange="toggleSelectLivesUser(this)" ${user.highlighted ? 'checked' : ''}>
                 <span class="username">${user.username} - ${user.lives} lives left</span>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', 1)">+1</button>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', -1)">-1</button>
             `;
+            if (user.highlighted) {
+                li.classList.add('highlight');
+            }
             livesList.appendChild(li);
         });
-        toggleBulkButtons();
+        addDragAndDropListeners('lives-list');
     });
 }
 
@@ -294,10 +281,11 @@ function banUser(username) {
 
 /**
  * Add drag and drop listeners to the draggable elements
+ * @param {string} listId - The ID of the list element
  */
-function addDragAndDropListeners() {
-    const draggables = document.querySelectorAll('.draggable');
-    const queueList = document.getElementById('queue-list');
+function addDragAndDropListeners(listId) {
+    const draggables = document.querySelectorAll(`#${listId} .draggable`);
+    const list = document.getElementById(listId);
 
     draggables.forEach(draggable => {
         draggable.addEventListener('dragstart', () => {
@@ -306,18 +294,18 @@ function addDragAndDropListeners() {
 
         draggable.addEventListener('dragend', () => {
             draggable.classList.remove('dragging');
-            updateQueueOrder();
+            updateOrder(listId);
         });
     });
 
-    queueList.addEventListener('dragover', e => {
+    list.addEventListener('dragover', e => {
         e.preventDefault();
-        const afterElement = getDragAfterElement(queueList, e.clientY);
+        const afterElement = getDragAfterElement(list, e.clientY);
         const dragging = document.querySelector('.dragging');
         if (afterElement == null) {
-            queueList.appendChild(dragging);
+            list.appendChild(dragging);
         } else {
-            queueList.insertBefore(dragging, afterElement);
+            list.insertBefore(dragging, afterElement);
         }
     });
 }
@@ -343,12 +331,13 @@ function getDragAfterElement(container, y) {
 }
 
 /**
- * Update the queue order and save it
+ * Update the order and save it
+ * @param {string} listId - The ID of the list element
  */
-function updateQueueOrder() {
-    const queueList = document.getElementById('queue-list');
-    const queueItems = queueList.querySelectorAll('.draggable');
-    const usernames = Array.from(queueItems).map(item => item.dataset.username);
+function updateOrder(listId) {
+    const list = document.getElementById(listId);
+    const items = list.querySelectorAll('.draggable');
+    const usernames = Array.from(items).map(item => item.dataset.username);
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -356,7 +345,9 @@ function updateQueueOrder() {
         return;
     }
 
-    fetch('/api/update_queue_order', {
+    const endpoint = listId === 'queue-list' ? '/api/update_queue_order' : '/api/update_lives_order';
+
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -367,8 +358,6 @@ function updateQueueOrder() {
         .then(data => {
             fetchData();
         });
-
-    saveQueueOrder(usernames);
 }
 
 /**
@@ -394,14 +383,43 @@ function spinQueue() {
         chosenUsers.push(chosenUser);
     }
 
-    const highlightedUsers = getHighlightedUsers();
-    const newHighlightedUsers = chosenUsers.map(user => user.dataset.username);
-    saveHighlightedUsers([...new Set([...highlightedUsers, ...newHighlightedUsers])]);
+    const highlightedUsers = chosenUsers.map(user => user.dataset.username);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Update highlighted users in the backend
+    fetch('/api/update_highlighted_users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ highlighted_users: highlightedUsers })
+    })
+    .then(response => response.json())
+    .then(data => {
+        fetchData();
+    });
 
     chosenUsers.forEach(user => queueList.prepend(user));
 
     const currentOrder = Array.from(queueList.children).map(item => item.dataset.username);
-    saveQueueOrder(currentOrder);
+
+    fetch('/api/update_queue_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ order: currentOrder })
+    }).then(response => response.json())
+        .then(data => {
+            fetchData();
+        });
 }
 
 /**
@@ -415,6 +433,23 @@ function clearSpin() {
     });
     saveHighlightedUsers([]);
     saveQueueOrder([]);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Clear highlights in the backend
+    fetch('/api/clear_highlighted_users', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    }).then(response => response.json())
+        .then(data => {
+            fetchData();
+        });
 }
 
 /**
@@ -440,6 +475,24 @@ function toggleHighlight(checkbox) {
     }
 
     saveHighlightedUsers(highlightedUsers);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    fetch('/api/update_highlighted_users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ highlighted_users: highlightedUsers })
+    }).then(response => response.text())
+        .then(data => {
+            fetchData();
+        });
 }
 
 /**
@@ -463,6 +516,25 @@ function toggleSelectLivesUser(checkbox) {
     }
 
     saveSelectedLivesUsers(selectedLivesUsers);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    fetch('/api/update_highlighted_lives', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ highlighted_users: selectedLivesUsers })
+    }).then(response => response.text())
+        .then(data => {
+            fetchData();
+        });
+
     toggleBulkButtons();
 }
 

@@ -27,6 +27,8 @@ class Queue(db.Model):
     __tablename__ = 'queue'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
+    position = db.Column(db.Integer, nullable=False, default=0)
+    highlighted = db.Column(db.Boolean, default=False)
     
 
 @queue_bp.route('/api/queue', methods=['GET'])
@@ -108,7 +110,10 @@ def update_queue_order():
         for position, username in enumerate(order):
             user = Queue.query.filter_by(username=username).first()
             if user:
-                user.order = position
+                user.position = position
+            else:
+                new_user = Queue(username=username, position=position)
+                db.session.add(new_user)
         
         db.session.commit()
         socketio.emit('update', {'message': 'Queue updated!'})
@@ -121,3 +126,34 @@ def update_queue_order():
     except Exception as e:
         db.session.rollback()
         return jsonify({'msg': str(e)}), 500
+
+@queue_bp.route('/api/update_highlighted_users', methods=['POST'])
+@jwt_required()
+def update_highlighted_users():
+    data = request.get_json()
+    highlighted_users = data.get('highlighted_users', [])
+    
+    for user in Queue.query.all():
+        user.highlighted = user.username in highlighted_users
+    
+    db.session.commit()
+    socketio.emit('update', {'message': 'Highlighted users updated!'})
+    return jsonify({'msg': 'Highlighted users updated successfully'}), 200
+
+@queue_bp.route('/api/clear_highlighted_users', methods=['POST'])
+@jwt_required()
+def clear_highlighted_users():
+    for user in Queue.query.all():
+        user.highlighted = False
+        
+    db.session.commit()
+    socketio.emit('update', {'message': 'Highlighted users updated!'})
+    return jsonify({'message': 'All highlights cleared successfully.'})
+
+@queue_bp.route('/api/get_queue_order', methods=['GET'])
+@jwt_required()
+def get_queue_order():
+    queue_order = Queue.query.order_by(Queue.position).all()
+    return jsonify({
+        'queue_order': [{'username': user.username, 'highlighted': user.highlighted} for user in queue_order]
+    }), 200
