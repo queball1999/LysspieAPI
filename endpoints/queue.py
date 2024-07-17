@@ -6,7 +6,7 @@ from flask import jsonify, request, Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from .socketio import *
 from .user import User
-from .auth import api_key_required
+from .auth import auth_required
 
 # Import your local modules
 from .database import db
@@ -32,7 +32,7 @@ class Queue(db.Model):
     
 
 @queue_bp.route('/api/queue', methods=['GET'])
-@api_key_required
+@auth_required
 def manage_queue():
     action = request.args.get('action')
     username = request.args.get('username')
@@ -79,7 +79,7 @@ def manage_queue():
         return "invalid_action", 400
     
 @queue_bp.route('/api/clear_queue', methods=['POST'])
-@jwt_required()
+@auth_required
 def clean_queue():
     current_user = get_jwt_identity()
     Queue.query.delete()
@@ -88,7 +88,7 @@ def clean_queue():
     return "Queue cleaned", 200
 
 @queue_bp.route('/api/remove_user', methods=['POST'])
-@jwt_required()
+@auth_required
 def remove_user():
     current_user = get_jwt_identity()
     username = request.args.get('username')
@@ -101,34 +101,25 @@ def remove_user():
     return "User not found", 404
 
 @queue_bp.route('/api/update_queue_order', methods=['POST'])
-@jwt_required()
+@auth_required
 def update_queue_order():
-    try:
-        data = request.get_json()
-        order = data.get('order', [])
-        
-        for position, username in enumerate(order):
-            user = Queue.query.filter_by(username=username).first()
-            if user:
-                user.position = position
-            else:
-                new_user = Queue(username=username, position=position)
-                db.session.add(new_user)
-        
-        db.session.commit()
-        socketio.emit('update', {'message': 'Queue updated!'})
-        return jsonify({'msg': 'Queue order updated successfully'}), 200
+    data = request.get_json()
+    order = data.get('order', [])
     
-    except IntegrityError as e:
-        db.session.rollback()
-        return jsonify({'msg': str(e.orig)}), 400
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'msg': str(e)}), 500
+    for position, username in enumerate(order):
+        user = Queue.query.filter_by(username=username).first()
+        if user:
+            user.position = position
+        else:
+            new_user = Queue(username=username, position=position)
+            db.session.add(new_user)
+    
+    db.session.commit()
+    socketio.emit('update', {'message': 'Queue order updated!'})
+    return jsonify({'msg': 'Queue order updated successfully'}), 200
 
 @queue_bp.route('/api/update_highlighted_users', methods=['POST'])
-@jwt_required()
+@auth_required
 def update_highlighted_users():
     data = request.get_json()
     highlighted_users = data.get('highlighted_users', [])
@@ -141,7 +132,7 @@ def update_highlighted_users():
     return jsonify({'msg': 'Highlighted users updated successfully'}), 200
 
 @queue_bp.route('/api/clear_highlighted_users', methods=['POST'])
-@jwt_required()
+@auth_required
 def clear_highlighted_users():
     for user in Queue.query.all():
         user.highlighted = False
@@ -151,7 +142,7 @@ def clear_highlighted_users():
     return jsonify({'message': 'All highlights cleared successfully.'})
 
 @queue_bp.route('/api/get_queue_order', methods=['GET'])
-@jwt_required()
+@auth_required
 def get_queue_order():
     queue_order = Queue.query.order_by(Queue.position).all()
     return jsonify({

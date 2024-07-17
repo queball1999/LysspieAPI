@@ -146,18 +146,23 @@ function fetchData() {
  */
 function clearQueue() {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
         window.location.href = '/login';
         return;
     }
 
     fetch('/api/clear_queue', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-        .then(response => response.text())
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        }
+    }).then(response => response.text())
         .then(data => {
             fetchData();
+            closeClearQueueModal();
         });
 }
 
@@ -244,7 +249,7 @@ function bulkClearLives() {
     const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox:checked');
     const usernames = Array.from(checkboxes).map(checkbox => checkbox.parentElement.dataset.username);
 
-    fetch('/api/bulk_clear', {
+    fetch('/api/clear_lives', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -254,6 +259,7 @@ function bulkClearLives() {
     })
         .then(response => response.text())
         .then(data => {
+            closeClearLivesModal();
             fetchData();
         });
 }
@@ -518,7 +524,8 @@ function toggleSelectLivesUser(checkbox) {
     saveSelectedLivesUsers(selectedLivesUsers);
 
     const token = localStorage.getItem('token');
-    if (!token) {
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
         window.location.href = '/login';
         return;
     }
@@ -527,7 +534,8 @@ function toggleSelectLivesUser(checkbox) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
         },
         body: JSON.stringify({ highlighted_users: selectedLivesUsers })
     }).then(response => response.text())
@@ -625,6 +633,34 @@ function openProfile() {
  */
 function closeProfile() {
     document.getElementById('profile-modal').style.display = 'none';
+}
+
+/**
+ * Open the clear queue modal
+ */
+function openClearQueueModal() {
+    document.getElementById('clear-queue-modal').style.display = 'block';
+}
+
+/**
+ * Close the clear queue modal
+ */
+function closeClearQueueModal() {
+    document.getElementById('clear-queue-modal').style.display = 'none';
+}
+
+/**
+ * Open the clear lives modal
+ */
+function openClearLivesModal() {
+    document.getElementById('clear-lives-modal').style.display = 'block';
+}
+
+/**
+ * Close the clear lives modal
+ */
+function closeClearLivesModal() {
+    document.getElementById('clear-lives-modal').style.display = 'none';
 }
 
 /**
