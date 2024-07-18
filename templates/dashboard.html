@@ -36,7 +36,7 @@
             <input type="number" id="spin-count" min="1" max="100" value="1">
             <button onclick="spinQueue()">Spin</button>
             <button onclick="clearSpin()">Clear Spin</button>
-            <button class="clear-queue-btn" onclick="clearQueue()">Clear Queue</button>
+            <button class="clear-queue-btn" onclick="openClearQueueModal()">Clear Queue</button>
             <button class="toggle-view-btn" onclick="toggleView('queue-list')">Grid</button>
             <div class="queue-container">
                 <ol id="queue-list" class="list">
@@ -49,7 +49,7 @@
             <div class="lives-controls">
                 <input type="checkbox" id="select-all-lives" onclick="toggleSelectAllLives(this)">
                 <button class="bulk-ban-btn" onclick="bulkBanUsers()" disabled>Bulk Ban</button>
-                <button class="bulk-clear-btn" onclick="bulkClearLives()" disabled>Bulk Clear</button>
+                <button class="bulk-clear-btn" onclick="openClearLivesModal()" disabled>Bulk Clear</button>
             </div>
             <button class="toggle-view-btn" onclick="toggleView('lives-list')">Grid</button>
             <div class="lives-container">
@@ -89,19 +89,29 @@
     <div id="profile-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeProfile()">&times;</span>
+            <h2>Profile</h2>
             <div class="profile-container">
-                <h3>Profile</h3>
-                <label for="display-name">Display Name:</label>
-                <input type="text" id="display-name">
-                <label for="password">Password:</label>
-                <input type="password" id="password">
-                <label for="api-key">API Key:</label>
-                <input type="text" id="api-key" readonly>
-                <button onclick="resetApiKey()">Reset API Key</button>
-                <button onclick="saveProfile()">Save Changes</button>
+                <div class="avatar-section">
+                    <img id="profile-avatar" src="/static/images/default-avatar.png" alt="Avatar" class="profile-avatar">
+                    <input type="file" id="avatar-upload" accept="image/*" onchange="uploadAvatar()">
+                </div>
+                <div class="profile-details">
+                    <label for="display-name">Display Name:</label>
+                    <input type="text" id="display-name" value="">
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" value="********" onfocus="clearPassword()">
+
+                    <label for="api-key">API Key:</label>
+                    <input type="text" id="api-key" readonly>
+
+                    <button onclick="resetApiKey()" style="width: auto;">Reset API Key</button>
+                    <button onclick="saveProfile()" style="width: auto;">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
+
 
     <!-- Session Continuation Modal -->
     <div id="session-modal" class="modal">
@@ -110,6 +120,37 @@
             <p>Your session is about to expire. Do you want to continue your session?</p>
             <button onclick="continueSession()">Yes</button>
             <button onclick="logout()">No</button>
+        </div>
+    </div>
+
+    <!-- Clear Queue Confirmation Modal -->
+    <div id="clear-queue-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeClearQueueModal()">&times;</span>
+            <p>Are you sure you want to clear the queue? This action cannot be undone.</p>
+            <button onclick="clearQueue()">Yes, Clear Queue</button>
+            <button onclick="closeClearQueueModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Clear Lives Confirmation Modal -->
+    <div id="clear-lives-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeClearLivesModal()">&times;</span>
+            <p>Are you sure you want to clear selected users from the lives list? This action cannot be undone.</p>
+            <button onclick="bulkClearLives()">Yes, Clear Lives</button>
+            <button onclick="closeClearLivesModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Remove User Confirmation Modal -->
+    <div id="remove-user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRemoveUserModal()">&times;</span>
+            <p id="remove-user-message"></p>
+            <input type="hidden" id="remove-user-username">
+            <button onclick="removeUser()">Yes</button>
+            <button onclick="closeRemoveUserModal()">No</button>
         </div>
     </div>
 

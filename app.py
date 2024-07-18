@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from flask.logging import create_logger
 from flask_jwt_extended import JWTManager
 
+# FIXME:
+#       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
+
 # Custom module imports
 from endpoints import *
 
@@ -62,6 +65,7 @@ app.register_blueprint(database_bp)
 app.register_blueprint(queue_bp)
 app.register_blueprint(ninelives_bp)
 app.register_blueprint(dashboard_bp)
+app.register_blueprint(user_bp)
 app.register_blueprint(auth_bp)
 
 # Initialize extensions

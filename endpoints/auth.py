@@ -3,26 +3,34 @@ import secrets
 import bcrypt
 import jwt
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request
 from functools import wraps
 from .database import db
-from .user import User
+from .models import *
 
 auth_bp = Blueprint('auth', __name__)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-def api_key_required(f):
+def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = request.headers.get('X-API-KEY')
-        if not api_key:
-            return jsonify({"message": "API key missing"}), 401
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({"msg": "Missing Authorization Header"}), 401
+
+        auth_token = auth_header.split(" ")[1]
         
-        user = User.query.filter_by(api_key=api_key).first()
-        if not user:
-            return jsonify({"message": "Invalid API key"}), 401
-        
-        return f(*args, **kwargs)
+        # Check if it's a JWT
+        try:
+            verify_jwt_in_request()
+            return f(*args, **kwargs)
+        except Exception as jwt_error:
+            # If not a valid JWT, check if it's an API key
+            user = User.query.filter_by(api_key=auth_token).first()
+            if not user:
+                return jsonify({"msg": "Invalid API key or JWT"}), 401
+            
+            return f(*args, **kwargs)
     return decorated_function
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -41,12 +49,13 @@ def login():
     return render_template('login.html')
 
 @auth_bp.route('/register', methods=['POST'])
+@jwt_required()
 def register():
     data = request.json
     email = data['email']
     password = data['password']
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    api_key = api_key = 'q-' + secrets.token_hex(32)
+    api_key = 'q-' + secrets.token_hex(32)
     new_user = User(email=email, password=hashed_password, api_key=api_key)
     db.session.add(new_user)
     db.session.commit()

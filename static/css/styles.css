@@ -1,3 +1,4 @@
+/* General styles */
 body {
     background-color: pink;
     font-family: Arial, sans-serif;
@@ -9,7 +10,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
+    padding: 10px 2em;
     background-color: pink;
     width: 100%;
     position: fixed;
@@ -29,6 +30,7 @@ body {
 .right-controls {
     display: flex;
     align-items: center;
+    padding-right: 2em;
 }
 
 .refresh {
@@ -101,7 +103,7 @@ body {
 
 .list {
     list-style-type: none;
-    padding: 0;
+    padding: 5px 10px 5px 0px;
     margin: 0;
 }
 
@@ -146,7 +148,7 @@ body {
 }
 
 .highlight {
-    background-color: yellow;
+    background-color: pink;
     font-weight: bold;
 }
 
@@ -254,24 +256,24 @@ body {
 
 /* Modal styles */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 1;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
     background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
+    margin: 20vh auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    width: 50%; /* Could be more or less, depending on screen size */
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -294,6 +296,56 @@ body {
 .profile-container {
     display: flex;
     flex-direction: column;
+}
+
+.profile-container {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.profile-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-details input[type="text"],
+.profile-details input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.profile-details button {
+    width: auto;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.profile-details button:hover {
+    background-color: #45a049;
 }
 
 .settings-menu {
@@ -332,4 +384,35 @@ body {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+/* Media Queries for mobile handling */
+@media (max-width: 768px) {
+    .header {
+        justify-content: space-between;
+        padding: 10px 1em;
+    }
+
+    .right-controls {
+        padding-right: 0;
+    }
+
+    .container {
+        flex-direction: column;
+        align-items: center;
+        padding: 0 1em;
+    }
+
+    .column {
+        width: 80%;
+        margin-bottom: 20px;
+    }
+
+    .login-container {
+        width: 80%;
+    }
+
+    .modal-content {
+        width: 80%; /* Adjust modal width on mobile */
+    }
 }
