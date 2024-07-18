@@ -104,13 +104,16 @@
 
                     <label for="api-key">API Key:</label>
                     <input type="text" id="api-key" readonly>
-
-                    <button onclick="resetApiKey()" style="width: auto;">Reset API Key</button>
-                    <button onclick="saveProfile()" style="width: auto;">Save Changes</button>
+                    <div class="profile-buttons">
+                        <button onclick="resetApiKey()">Reset API Key</button>
+                        <button onclick="saveProfile()">Save Changes</button>
+                    </div>
                 </div>
+                
             </div>
         </div>
     </div>
+
 
 
     <!-- Session Continuation Modal -->

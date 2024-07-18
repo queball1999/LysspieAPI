@@ -2,20 +2,21 @@ import os
 import secrets
 import socket
 import sys
-from datetime import timedelta
-from flask import Flask
+
+# load .env
 from dotenv import load_dotenv
+load_dotenv()
+
+from flask import Flask
 from flask.logging import create_logger
 from flask_jwt_extended import JWTManager
-
-# FIXME:
-#       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
 
 # Custom module imports
 from endpoints import *
 
-# load .env
-load_dotenv()
+# FIXME:
+#       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -32,15 +33,10 @@ DATABASE_TYPE = os.getenv('DATABASE', 'POSTGRES').upper()
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = None
 SECRET_KEY = os.getenv('SECRET_KEY')
-JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 APP_DEFAULT_EMAIL = os.getenv('APP_DEFAULT_EMAIL').lower()
 APP_DEFAULT_PASSWORD = os.getenv('APP_DEFAULT_PASSWORD')
 
-# Set Flask configurations
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = SECRET_KEY
-app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600)))
+
 
 # Initialize JWT
 jwt = JWTManager(app)
@@ -55,10 +51,11 @@ else:
     log.error("Unsupported DATABASE type; only 'POSTGRES' or 'MYSQL' are valid.")
     print("Unsupported DATABASE type; only 'POSTGRES' or 'MYSQL' are valid.")
     sys.exit(1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-log.info(f'{DATABASE_TYPE} database configuration loaded.')
-
+    
+# Set Flask configurations
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI    
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # Register blueprints
 app.register_blueprint(database_bp)
@@ -77,10 +74,8 @@ with app.app_context():
     try:
         db.create_all()
         if not User.query.filter_by(email=APP_DEFAULT_EMAIL).first():
-            api_key = 'q-' + secrets.token_hex(32)
-            print(api_key)
+            api_key = User.generate_api_key()
             default_user = User(email=APP_DEFAULT_EMAIL, password=APP_DEFAULT_PASSWORD, api_key=api_key, role='admin')
-            print(default_user.password_hash, default_user.api_key)
             db.session.add(default_user)
             db.session.commit()
     except Exception as e:

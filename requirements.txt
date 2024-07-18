@@ -6,4 +6,5 @@ flask_sqlalchemy
 flask-socketio
 SQLAlchemy
 python-dotenv
+cryptography
 psycopg2

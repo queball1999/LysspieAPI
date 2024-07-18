@@ -190,7 +190,7 @@ body {
 
 .login-container {
     background-color: white;
-    padding: 30px;
+    padding: 25px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 300px;
@@ -229,6 +229,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    padding-bottom: 25px;
+    font-size: 14px;
+}
+
+.lysspie-login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding-bottom: 25px;
 }
 
@@ -273,7 +281,7 @@ body {
     margin: 20vh auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 50%; /* Could be more or less, depending on screen size */
+    width: 50%;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -295,19 +303,14 @@ body {
 .settings-container,
 .profile-container {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
-.profile-container {
-    display: flex;
-    align-items: center;
-}
-
-.avatar-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-right: 20px;
+.profile-details, .avatar-section {
+    flex: 1;
+    margin: 10px;
+    justify-content: center;
 }
 
 .profile-avatar {
@@ -316,12 +319,6 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 10px;
-}
-
-.profile-details {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
 }
 
 .profile-details input[type="text"],
@@ -333,7 +330,13 @@ body {
     border-radius: 5px;
 }
 
-.profile-details button {
+.profile-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.profile-buttons button {
     width: auto;
     padding: 10px;
     background-color: #4CAF50;
@@ -341,10 +344,10 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-right: 10px;
+    margin: 5px;
 }
 
-.profile-details button:hover {
+.profile-buttons button:hover {
     background-color: #45a049;
 }
 
@@ -408,11 +411,7 @@ body {
         margin-bottom: 20px;
     }
 
-    .login-container {
-        width: 80%;
-    }
-
-    .modal-content {
-        width: 80%; /* Adjust modal width on mobile */
+    .login-container .modal-content {
+        width: 75%;
     }
 }

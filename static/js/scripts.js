@@ -161,7 +161,7 @@ function clearQueue() {
         }
     }).then(response => response.text())
         .then(data => {
-            fetchData();
+            console.log('Queue cleared successfully'); // Log message instead of fetching data
             closeClearQueueModal();
         });
 }
@@ -184,8 +184,8 @@ function removeUser() {
     })
         .then(response => response.text())
         .then(data => {
+            console.log('User removed successfully'); // Log message instead of fetching data
             closeRemoveUserModal();
-            fetchData();
         });
 }
 
@@ -207,7 +207,7 @@ function adjustLives(username, amount) {
     })
         .then(response => response.text())
         .then(data => {
-            fetchData();
+            console.log(`Adjusted lives for ${username}`); // Log message instead of fetching data
         });
 }
 
@@ -234,7 +234,7 @@ function bulkBanUsers() {
     })
         .then(response => response.text())
         .then(data => {
-            fetchData();
+            console.log('Bulk banned users successfully'); // Log message instead of fetching data
         });
 }
 
@@ -261,8 +261,8 @@ function bulkClearLives() {
     })
         .then(response => response.text())
         .then(data => {
+            console.log('Bulk cleared lives successfully'); // Log message instead of fetching data
             closeClearLivesModal();
-            fetchData();
         });
 }
 
@@ -283,7 +283,7 @@ function banUser(username) {
     })
         .then(response => response.text())
         .then(data => {
-            fetchData();
+            console.log(`Banned user ${username}`); // Log message instead of fetching data
         });
 }
 
@@ -364,7 +364,8 @@ function updateOrder(listId) {
         body: JSON.stringify({ order: usernames })
     }).then(response => response.text())
         .then(data => {
-            fetchData();
+            //fetchData();
+            console.log('Order updated successfully');
         });
 }
 
@@ -410,7 +411,8 @@ function spinQueue() {
     })
     .then(response => response.json())
     .then(data => {
-        fetchData();
+        //fetchData();
+        console.log('Spun successfully');
     });
 
     chosenUsers.forEach(user => queueList.prepend(user));
@@ -426,7 +428,8 @@ function spinQueue() {
         body: JSON.stringify({ order: currentOrder })
     }).then(response => response.json())
         .then(data => {
-            fetchData();
+            //fetchData();
+            console.log('Queue updated successfully');
         });
 }
 
@@ -456,7 +459,8 @@ function clearSpin() {
         }
     }).then(response => response.json())
         .then(data => {
-            fetchData();
+            //fetchData();
+            console.log('Spin selection cleared successfully');
         });
 }
 
@@ -499,7 +503,8 @@ function toggleHighlight(checkbox) {
         body: JSON.stringify({ highlighted_users: highlightedUsers })
     }).then(response => response.text())
         .then(data => {
-            fetchData();
+            //fetchData();
+            console.log('Highlighted users updated successfully');
         });
 }
 
@@ -542,7 +547,8 @@ function toggleSelectLivesUser(checkbox) {
         body: JSON.stringify({ highlighted_users: selectedLivesUsers })
     }).then(response => response.text())
         .then(data => {
-            fetchData();
+            //fetchData();
+            console.log('Highlighted users updated successfully');
         });
 
     toggleBulkButtons();
@@ -672,7 +678,40 @@ function uploadAvatar() {
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById('profile-avatar').src = data.avatar_url;
+        const avatarUrl = data.avatar_url;
+        document.getElementById('profile-avatar').src = avatarUrl;
+        document.getElementById('avatar-text').style.display = 'none';
+        document.querySelector('.avatar').style.backgroundImage = `url(${avatarUrl})`;
+        document.querySelector('.avatar').style.backgroundSize = 'cover';
+    });
+}
+
+/**
+ * Set the default avatar or initials in the header
+ */
+function setAvatar() {
+    const email = atob(token.split('.')[1]);
+    const username = JSON.parse(email).sub;
+    const avatarText = document.getElementById('avatar-text');
+    const avatarElement = document.querySelector('.avatar');
+    
+    avatarText.textContent = username.slice(0, 2).toUpperCase();
+
+    fetch('/api/get_user_avatar', {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.avatar_url) {
+            avatarText.style.display = 'none';
+            avatarElement.style.backgroundImage = `url(${data.avatar_url})`;
+            avatarElement.style.backgroundSize = 'cover';
+        } else {
+            avatarText.style.display = 'block';
+            avatarElement.style.backgroundImage = 'none';
+        }
     });
 }
 
@@ -713,7 +752,8 @@ function saveProfile() {
     .then(response => response.json())
     .then(data => {
         closeProfile();
-        fetchData();
+        //fetchData();
+        console.log('Profile saved successfully');
     });
 }
 
@@ -804,6 +844,7 @@ document.addEventListener('mousedown', resetActivityTimeout); // for mobile
 document.addEventListener('touchstart', resetActivityTimeout); // for mobile
 document.addEventListener('scroll', resetActivityTimeout);
 
-// Initial data fetch and activity timeout reset
+// Initial functions
 fetchData();
+//setAvatar();
 resetActivityTimeout();

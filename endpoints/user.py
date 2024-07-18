@@ -138,3 +138,12 @@ def upload_avatar():
     user.avatar_url = avatar_path
     db.session.commit()
     return jsonify(avatar_url=f'/{avatar_path}')
+
+@user_bp.route('/api/get_user_avatar', methods=['GET'])
+@auth_required
+def get_user_avatar():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(email=current_user).first()
+    if user and user.avatar_url:
+        return jsonify(avatar_url=user.avatar_url)
+    return jsonify(avatar_url=None)

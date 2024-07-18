@@ -9,7 +9,6 @@ from .database import db
 from .models import *
 
 auth_bp = Blueprint('auth', __name__)
-SECRET_KEY = os.getenv('SECRET_KEY')
 
 def auth_required(f):
     @wraps(f)
@@ -26,11 +25,14 @@ def auth_required(f):
             return f(*args, **kwargs)
         except Exception as jwt_error:
             # If not a valid JWT, check if it's an API key
-            user = User.query.filter_by(api_key=auth_token).first()
-            if not user:
-                return jsonify({"msg": "Invalid API key or JWT"}), 401
-            
-            return f(*args, **kwargs)
+            users = User.query.all()
+            for user in users:
+                try:
+                    if user.api_key == auth_token:
+                        return f(*args, **kwargs)
+                except Exception as e:
+                    continue
+            return jsonify({"msg": "Invalid API key or JWT"}), 401
     return decorated_function
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -55,7 +57,7 @@ def register():
     email = data['email']
     password = data['password']
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    api_key = 'q-' + secrets.token_hex(32)
+    api_key = User.generate_api_key()
     new_user = User(email=email, password=hashed_password, api_key=api_key)
     db.session.add(new_user)
     db.session.commit()
