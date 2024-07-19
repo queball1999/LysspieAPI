@@ -15,7 +15,9 @@ dashboard_bp = Blueprint('dashboard', __name__)
 # Defining endpoints for downloads
 @dashboard_bp.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    web_server = request.environ.get('SERVER_SOFTWARE', 'Unknown Web Server')
+    app_version = "1.0.0"  # Replace with your app version
+    return render_template('dashboard.html', web_server=web_server, app_version=app_version)
 
 @dashboard_bp.route('/')
 def home():
@@ -28,15 +30,3 @@ def get_queue():
     queue_list = Queue.query.order_by(Queue.id).all()
     queue_data = [{"username": user.username} for user in queue_list]
     return jsonify({"queue": queue_data})
-
-    
-"""
-@dashboard_bp.route('/api/reset_api_key', methods=['POST'])
-@auth_required
-def reset_api_key():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(username=current_user).first()
-    user.api_key = secrets.token_hex(16)
-    db.session.commit()
-    return jsonify({'api_key': user.api_key})
-"""

@@ -33,10 +33,44 @@ body {
     padding-right: 2em;
 }
 
-.refresh {
+/* Header buttons */
+.header-buttons {
     display: flex;
     align-items: center;
-    margin-right: 15px;
+    justify-content: center;
+    flex-direction: row;
+    padding-right: 25px;
+}
+
+.header-buttons i {
+    margin-right: 5px;
+}
+
+
+.header-button,
+.theme-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 0px 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+    font-weight: semi-bold;
+    height: 40px;
+    line-height: 40px; /* Ensure text is centered */
+}
+
+.header-button img,
+.theme-button img{
+    width: 20px;
+    height: 20px;
+    padding: 5px;
 }
 
 .avatar {
@@ -248,7 +282,7 @@ body {
 
 .queue-container::-webkit-scrollbar-track,
 .lives-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: transparent;
 }
 
 .queue-container::-webkit-scrollbar-thumb,
@@ -272,8 +306,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -284,11 +317,47 @@ body {
     width: 50%;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-container {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.settings-menu {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 7.5px;
+    flex: 1;
+    min-width: 150px;
+}
+
+.settings-content {
+    flex: 3; /* Take more space than the menu */
+    padding: 10px;
+}
+
+.settings-menu a {
+    display: block;
+    padding: 10px;
+    color: black;
+    text-decoration: none;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.settings-menu a:hover {
+    background-color: #ddd;
 }
 
 .close {
     color: #aaa;
-    float: right;
+    align-self: flex-end;
     font-size: 28px;
     font-weight: bold;
 }
@@ -300,6 +369,7 @@ body {
     cursor: pointer;
 }
 
+/* Profile Modal */
 .profile-container {
     display: flex;
     align-items: center;
@@ -344,42 +414,94 @@ body {
     background-color: #45a049;
 }
 
-.settings-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: row;
+/* General settings section */
+#general-settings {
+    display: block;
 }
 
-.settings-menu {
-    flex: 1;
+#general-settings h4 {
+    margin-top: 20px;
 }
 
-.settings-menu ul {
-    list-style: none;
-    padding: 0;
-}
-
-.settings-menu li {
-    padding: 10px;
-    cursor: pointer;
-}
-
-.settings-menu li:hover {
-    background-color: #f0f0f0;
-}
-
-.settings-content {
-    flex: 3;
-    padding-left: 20px;
-}
-
+/* Settings sections */
 .settings-section {
     display: none;
 }
 
-#general-settings {
-    display: block;
+/* Dark mode */
+body.dark-mode {
+    background-color: pink;
+    color: white;
+}
+
+.header.dark-mode {
+    background-color: pink;
+}
+
+.avatar.dark-mode {
+    background-color: #555;
+}
+
+.column.dark-mode {
+    background-color: #202020;
+    border-color: #202020;
+}
+
+.modal-content.dark-mode {
+    background-color: #202020;
+    color: white;
+}
+
+.list.dark-mode,
+.draggable.dark-mode {
+    background-color: #363636;
+    color: white;
+}
+
+.header-button.dark-mode,
+.theme-button.dark-mode,
+.toggle-view-btn.dark-mode{
+    background-color: #202020;
+    border: 1px solid #363636;
+    color: white;
+}
+
+.settings-menu.dark-mode {
+    background-color: #363636;
+    color: white;
+}
+
+.settings-menu.dark-mode a {
+    color: white;
+}
+
+.settings-menu.dark-mode a:hover {
+    color: black;
+}
+
+/* Apply primary color */
+body.custom-primary {
+    --primary-color: #f0f0f0;
+}
+
+.header.custom-primary {
+    background-color: var(--primary-color);
+}
+
+.avatar.custom-primary {
+    background-color: var(--primary-color);
+}
+
+.column.custom-primary {
+    border-color: var(--primary-color);
+}
+
+.modal-content.custom-primary {
+    background-color: var(--primary-color);
+}
+
+.list.custom-primary .draggable {
+    background-color: var(--primary-color);
 }
 
 /* Media Queries for mobile handling */
@@ -397,6 +519,10 @@ body {
         flex-direction: column;
         align-items: center;
         padding: 0 1em;
+    }
+
+    .header-button {
+        display: none;
     }
 
     .column {

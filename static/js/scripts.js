@@ -690,6 +690,7 @@ function closeSettings() {
 function showGeneralSettings() {
     document.getElementById('general-settings').style.display = 'block';
     document.getElementById('user-management').style.display = 'none';
+    document.getElementById('about-section').style.display = 'none';
 }
 
 /**
@@ -698,6 +699,16 @@ function showGeneralSettings() {
 function showUserManagement() {
     document.getElementById('general-settings').style.display = 'none';
     document.getElementById('user-management').style.display = 'block';
+    document.getElementById('about-section').style.display = 'none';
+}
+
+/**
+ * Show the about section
+ */
+function showAbout() {
+    document.getElementById('general-settings').style.display = 'none';
+    document.getElementById('user-management').style.display = 'none';
+    document.getElementById('about-section').style.display = 'block';
 }
 
 /**
@@ -901,6 +912,60 @@ function resetActivityTimeout() {
     }, timeoutDuration - timeoutWarning);
 }
 
+function changeTheme(theme) {
+    const body = document.body;
+    const themeIcon = document.getElementById('theme-icon');
+    const githubIcon = document.getElementById('github-icon');
+
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('.header').classList.add('dark-mode');
+        //document.querySelector('.avatar').classList.add('dark-mode');
+        document.querySelectorAll('.column').forEach(col => col.classList.add('dark-mode'));
+        document.querySelectorAll('.modal-content').forEach(modal => modal.classList.add('dark-mode'));
+        document.querySelectorAll('.list .draggable').forEach(item => item.classList.add('dark-mode'));
+        document.querySelectorAll('.header-button').forEach(item => item.classList.add('dark-mode'));
+        document.querySelectorAll('.theme-button').forEach(item => item.classList.add('dark-mode'));
+        document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.add('dark-mode'));
+        document.querySelectorAll('.settings-menu').forEach(item => item.classList.add('dark-mode'));
+        themeIcon.src = '/static/images/sun.svg';
+        githubIcon.src = '/static/images/github-light.svg';
+    } else {
+        body.classList.remove('dark-mode');
+        document.querySelector('.header').classList.remove('dark-mode');
+        //document.querySelector('.avatar').classList.remove('dark-mode');
+        document.querySelectorAll('.column').forEach(col => col.classList.remove('dark-mode'));
+        document.querySelectorAll('.modal-content').forEach(modal => modal.classList.remove('dark-mode'));
+        document.querySelectorAll('.list .draggable').forEach(item => item.classList.remove('dark-mode'));
+        document.querySelectorAll('.header-button').forEach(item => item.classList.remove('dark-mode'));
+        document.querySelectorAll('.theme-button').forEach(item => item.classList.remove('dark-mode'));
+        document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.remove('dark-mode'));
+        document.querySelectorAll('.settings-menu').forEach(item => item.classList.remove('dark-mode'));
+        themeIcon.src = '/static/images/moon.svg';
+        githubIcon.src = '/static/images/github-dark.svg';
+    }
+}
+
+function toggleTheme() {
+    const body = document.body;
+    if (body.classList.contains('dark-mode')) {
+        changeTheme('light');
+    } else {
+        changeTheme('dark');
+    }
+}
+
+function changePrimaryColor(color) {
+    document.documentElement.style.setProperty('--primary-color', color);
+    document.body.classList.add('custom-primary');
+    document.querySelector('.header').classList.add('custom-primary');
+    document.querySelector('.avatar').classList.add('custom-primary');
+    document.querySelectorAll('.column').forEach(col => col.classList.add('custom-primary'));
+    document.querySelectorAll('.modal-content').forEach(modal => modal.classList.add('custom-primary'));
+    document.querySelectorAll('.list .draggable').forEach(item => item.classList.add('custom-primary'));
+}
+
+
 // Event listeners to reset activity timeout on various user actions
 document.addEventListener('mousemove', resetActivityTimeout);
 document.addEventListener('keypress', resetActivityTimeout);
@@ -915,6 +980,25 @@ document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
         checkInactivity();
     }
+});
+
+// Call changeTheme on page load to set the initial theme based on stored preference
+document.addEventListener('DOMContentLoaded', () => {
+    const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+    changeTheme(preferredTheme);
+    document.getElementById('theme-select').value = preferredTheme;
+});
+
+// Save the preferred theme to localStorage
+function savePreferredTheme(theme) {
+    localStorage.setItem('preferredTheme', theme);
+}
+
+// Update theme selection in the settings modal
+document.getElementById('theme-select').addEventListener('change', (event) => {
+    const selectedTheme = event.target.value;
+    changeTheme(selectedTheme);
+    savePreferredTheme(selectedTheme);
 });
 
 // Initial functions

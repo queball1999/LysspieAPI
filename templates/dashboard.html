@@ -14,16 +14,21 @@
             <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Home">
         </a>
         <div class="right-controls">
-            <div class="refresh">
-                <button onclick="fetchData()">Refresh</button>
+            <div class="header-buttons">
+                <button id="refresh" class="header-button" onclick="fetchData()">Refresh</button>
+                <a href="https://github.com/queball1999/LysspieAPI" class="header-button" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ url_for('static', filename='images/github-dark.svg') }}" alt="GitHub" id="github-icon"> Source code
+                </a>
+                <button id="theme-toggle" class="theme-button" onclick="toggleTheme()">
+                    <img src="{{ url_for('static', filename='images/moon.svg') }}" alt="Theme toggle" id="theme-icon">
+                </button>
             </div>
         
             <div class="avatar" onclick="toggleDropdown()">
                 <span id="avatar-text"></span>
                 <div class="dropdown-menu" id="dropdown-menu">
+                <a href="#" onclick="openProfile()">Profile</a>
                     <a href="#" onclick="openSettings()">Settings</a>
-                    <a href="#" onclick="openProfile()">Profile</a>
-                    <a href="#">Help</a>
                     <a href="#" onclick="logout()">Logout</a>
                 </div>
             </div>
@@ -66,24 +71,41 @@
             <span class="close" onclick="closeSettings()">&times;</span>
             <div class="settings-container">
                 <div class="settings-menu">
-                    <ul>
-                        <li onclick="showGeneralSettings()">General</li>
-                        <li onclick="showUserManagement()">User Management</li>
-                    </ul>
+                    <a href="#" onclick="showGeneralSettings()">General</a>
+                    <a href="#" onclick="showUserManagement()">User Management</a>
+                    <a href="#" onclick="showAbout()">About</a>
                 </div>
                 <div class="settings-content">
                     <div id="general-settings" class="settings-section">
                         <h3>General Settings</h3>
                         <!-- Add general settings content here -->
+                        <h4>Theming</h4>
+                        <label for="theme-select">Select Theme:</label>
+                        <select id="theme-select" onchange="changeTheme(this.value)">
+                            <option value="light">Light Mode</option>
+                            <option value="dark">Dark Mode</option>
+                        </select>
+                        <br>
+                        <label for="primary-color">Primary Color:</label>
+                        <input type="color" id="primary-color" name="primary-color" value="#f0f0f0" onchange="changePrimaryColor(this.value)">
                     </div>
                     <div id="user-management" class="settings-section">
                         <h3>User Management</h3>
                         <!-- Add user management content here -->
                     </div>
+                    <div id="about-section" class="settings-section">
+                        <h3>About</h3>
+                        <p>Web Server: {{ web_server }}</p>
+                        <p>App Version: {{ app_version }}</p>
+                        <br></br>
+                        <p>This website was made with love by <a href="https://github.com/queball1999" target="_blank">Queball1999</a> <3</p>
+                        <p>Check out Lysspie on <a href="https://www.twitch.tv/lysspie" target="_blank">twitch</a> :)</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Profile Modal -->
     <div id="profile-modal" class="modal">

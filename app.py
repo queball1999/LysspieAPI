@@ -16,7 +16,7 @@ from endpoints import *
 
 # FIXME:
 #       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
-
+#       - Add personal branding to the bottom of the site. Want to include version, date edited, quynnbell.com, "ask for help" gitea and github link.
 
 # Initialize Flask app
 app = Flask(__name__)
