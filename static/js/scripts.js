@@ -2,7 +2,7 @@
  * Initialize necessary variables
  */
 let intervalId;
-let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 80000; // Default to 15 minutes
+let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minutes
 let timeoutWarning = 60000; // Set to 1 minute timeout
 let activityTimeout;
 
@@ -17,6 +17,20 @@ socket.on('update', function(data) {
     fetchData(); // Refresh data on receiving an update
     resetActivityTimeout();
 });
+
+/**
+ * Check response status and handle unauthorized errors
+ * @param {Response} response - The fetch response object
+ * @returns {Response} - The fetch response object if no error
+ */
+function checkAuth(response) {
+    console.log(`Auth check: ${response.status}`);
+    if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        window.location.href = '/login';
+    }
+    return response;
+}
 
 /**
  * Retrieve highlighted users from local storage
@@ -84,6 +98,7 @@ function fetchData() {
             'X-API-KEY': apiKey
         }
     })
+    .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
         const queueOrder = data.queue_order;
@@ -115,6 +130,7 @@ function fetchData() {
             'X-API-KEY': apiKey
         }
     })
+    .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
         const livesOrder = data.lives_order;
@@ -159,11 +175,13 @@ function clearQueue() {
             'Authorization': `Bearer ${token}`,
             'X-API-KEY': apiKey
         }
-    }).then(response => response.text())
-        .then(data => {
-            console.log('Queue cleared successfully'); // Log message instead of fetching data
-            closeClearQueueModal();
-        });
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.text())
+    .then(data => {
+        console.log('Queue cleared successfully'); // Log message instead of fetching data
+        closeClearQueueModal();
+    });
 }
 
 /**
@@ -182,11 +200,12 @@ function removeUser() {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-        .then(response => response.text())
-        .then(data => {
-            console.log('User removed successfully'); // Log message instead of fetching data
-            closeRemoveUserModal();
-        });
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.text())
+    .then(data => {
+        console.log('User removed successfully'); // Log message instead of fetching data
+        closeRemoveUserModal();
+    });
 }
 
 /**
@@ -205,10 +224,11 @@ function adjustLives(username, amount) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-        .then(response => response.text())
-        .then(data => {
-            console.log(`Adjusted lives for ${username}`); // Log message instead of fetching data
-        });
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        console.log(`Adjusted lives for ${username}`); // Log message instead of fetching data
+    });
 }
 
 /**
@@ -232,10 +252,11 @@ function bulkBanUsers() {
         },
         body: JSON.stringify({ usernames: usernames })
     })
-        .then(response => response.text())
-        .then(data => {
-            console.log('Bulk banned users successfully'); // Log message instead of fetching data
-        });
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        console.log('Bulk banned users successfully'); // Log message instead of fetching data
+    });
 }
 
 /**
@@ -259,11 +280,12 @@ function bulkClearLives() {
         },
         body: JSON.stringify({ usernames: usernames })
     })
-        .then(response => response.text())
-        .then(data => {
-            console.log('Bulk cleared lives successfully'); // Log message instead of fetching data
-            closeClearLivesModal();
-        });
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        console.log('Bulk cleared lives successfully'); // Log message instead of fetching data
+        closeClearLivesModal();
+    });
 }
 
 /**
@@ -281,10 +303,11 @@ function banUser(username) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-        .then(response => response.text())
-        .then(data => {
-            console.log(`Banned user ${username}`); // Log message instead of fetching data
-        });
+    .then(checkAuth)    
+    .then(response => response.text())
+    .then(data => {
+        console.log(`Banned user ${username}`); // Log message instead of fetching data
+    });
 }
 
 /**
@@ -362,11 +385,13 @@ function updateOrder(listId) {
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ order: usernames })
-    }).then(response => response.text())
-        .then(data => {
-            //fetchData();
-            console.log('Order updated successfully');
-        });
+    })
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        //fetchData();
+        console.log('Order updated successfully');
+    });
 }
 
 /**
@@ -409,6 +434,7 @@ function spinQueue() {
         },
         body: JSON.stringify({ highlighted_users: highlightedUsers })
     })
+    .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
         //fetchData();
@@ -426,11 +452,13 @@ function spinQueue() {
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ order: currentOrder })
-    }).then(response => response.json())
-        .then(data => {
-            //fetchData();
-            console.log('Queue updated successfully');
-        });
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        //fetchData();
+        console.log('Queue updated successfully');
+    });
 }
 
 /**
@@ -457,11 +485,13 @@ function clearSpin() {
         headers: {
             'Authorization': `Bearer ${token}`
         }
-    }).then(response => response.json())
-        .then(data => {
-            //fetchData();
-            console.log('Spin selection cleared successfully');
-        });
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        //fetchData();
+        console.log('Spin selection cleared successfully');
+    });
 }
 
 /**
@@ -501,11 +531,13 @@ function toggleHighlight(checkbox) {
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ highlighted_users: highlightedUsers })
-    }).then(response => response.text())
-        .then(data => {
-            //fetchData();
-            console.log('Highlighted users updated successfully');
-        });
+    })
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        //fetchData();
+        console.log('Highlighted users updated successfully');
+    });
 }
 
 /**
@@ -545,11 +577,13 @@ function toggleSelectLivesUser(checkbox) {
             'X-API-KEY': apiKey
         },
         body: JSON.stringify({ highlighted_users: selectedLivesUsers })
-    }).then(response => response.text())
-        .then(data => {
-            //fetchData();
-            console.log('Highlighted users updated successfully');
-        });
+    })
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        //fetchData();
+        console.log('Highlighted users updated successfully');
+    });
 
     toggleBulkButtons();
 }
@@ -572,10 +606,52 @@ function toggleBulkButtons() {
  */
 function toggleSelectAllLives(checkbox) {
     const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox');
+    const selectedLivesUsers = [];
+
     checkboxes.forEach(cb => {
         cb.checked = checkbox.checked;
-        toggleSelectLivesUser(cb);
+        const listItem = cb.parentElement;
+        const username = listItem.dataset.username;
+
+        if (checkbox.checked) {
+            if (!selectedLivesUsers.includes(username)) {
+                selectedLivesUsers.push(username);
+            }
+            listItem.classList.add('highlight');
+        } else {
+            const index = selectedLivesUsers.indexOf(username);
+            if (index !== -1) {
+                selectedLivesUsers.splice(index, 1);
+            }
+            listItem.classList.remove('highlight');
+        }
     });
+
+    saveSelectedLivesUsers(selectedLivesUsers);
+
+    const token = localStorage.getItem('token');
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Update highlighted users in the backend
+    fetch('/api/update_highlighted_lives', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({ highlighted_users: selectedLivesUsers })
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        console.log('Highlighted users updated successfully');
+    });
+
     toggleBulkButtons();
 }
 
@@ -640,6 +716,7 @@ function openProfile() {
             'Authorization': `Bearer ${token}`
         }
     })
+    .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
         document.getElementById('api-key').value = data.api_key;
@@ -672,6 +749,7 @@ function resetApiKey() {
             'Authorization': `Bearer ${token}`
         }
     })
+    .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
         document.getElementById('api-key').value = data.api_key;
@@ -694,6 +772,7 @@ function saveProfile() {
         },
         body: JSON.stringify({ display_name: displayName, password: password !== '••••••••' ? password : '', api_key: apiKey })
     })
+    .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
         closeProfile();

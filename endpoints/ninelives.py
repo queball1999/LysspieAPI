@@ -47,7 +47,8 @@ def manage_ninelives():
             return f"{username} has {user.lives} lives left.", 200
     else:
         try:
-            new_user = NineLives(username=username, lives=8)
+            next_position = NineLives.get_next_position()
+            new_user = NineLives(username=username, lives=8, position=next_position)
             db.session.add(new_user)
             db.session.commit()
             socketio.emit('update', {'message': 'Ninelives updated!'})

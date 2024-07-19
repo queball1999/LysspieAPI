@@ -31,13 +31,19 @@ def auth_required(f):
                 return f(*args, **kwargs)
             except Exception as jwt_error:
                 print('JWT ERROR', jwt_error)   #convert to log
-                return render_template('login.html')
+                return redirect(url_for('auth.login'))
+            
         # Check if the token matches the API key pattern
         elif api_key_regex.match(auth_token):
             try:
-                user = User.query.filter_by(api_key=auth_token).first()
-                if user:
-                    return f(*args, **kwargs)
+                users = User.query.all()
+                for user in users:
+                    try:
+                        if user.api_key == auth_token:
+                            return f(*args, **kwargs)
+                    except Exception as e:
+                        continue
+                return redirect(url_for('auth.login'))
             except Exception as e:
                 print('API ERROR', e)   #convert to log
                 return jsonify({"msg": "Invalid API key"}), 401

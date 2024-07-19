@@ -28,15 +28,18 @@ def validate_username(username):
 @queue_bp.route('/api/queue', methods=['GET'])
 @auth_required
 def manage_queue():
+    print('QUEUE')
     action = request.args.get('action')
     username = request.args.get('username')
-    
+    print(action, username)
     if not action or not username or not validate_username(username):
         return "missing_parameters", 400
 
     if action == "join":
         try:
-            new_user = Queue(username=username)
+            print('JOIN QUEUE')
+            next_position = Queue.get_next_position()
+            new_user = Queue(username=username, position=next_position)
             db.session.add(new_user)
             db.session.commit()
             socketio.emit('update', {'message': 'Queue updated!'})

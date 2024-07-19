@@ -23,12 +23,26 @@ class NineLives(db.Model):
     position = db.Column(db.Integer, nullable=False, default=0)
     highlighted = db.Column(db.Boolean, default=False)
     
+    @staticmethod
+    def get_next_position():
+        max_position = db.session.query(db.func.max(NineLives.position)).scalar()
+        if max_position is None:
+            return 0
+        return max_position + 1
+    
 class Queue(db.Model):
     __tablename__ = 'queue'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     position = db.Column(db.Integer, nullable=False, default=0)
     highlighted = db.Column(db.Boolean, default=False)
+    
+    @staticmethod
+    def get_next_position():
+        max_position = db.session.query(db.func.max(Queue.position)).scalar()
+        if max_position is None:
+            return 0
+        return max_position + 1
     
 class User(db.Model):
     __tablename__ = 'user'
@@ -60,4 +74,4 @@ class User(db.Model):
     
     @staticmethod
     def generate_api_key():
-        return 'q-' + secrets.token_hex(64)
+        return 'q-' + secrets.token_hex(32)
