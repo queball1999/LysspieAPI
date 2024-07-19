@@ -1,3 +1,4 @@
+/* General styles */
 body {
     background-color: pink;
     font-family: Arial, sans-serif;
@@ -9,7 +10,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
+    padding: 10px 2em;
     background-color: pink;
     width: 100%;
     position: fixed;
@@ -24,6 +25,18 @@ body {
     max-width: 100%;
     max-height: 100%;
     display: block;
+}
+
+.right-controls {
+    display: flex;
+    align-items: center;
+    padding-right: 2em;
+}
+
+.refresh {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
 }
 
 .avatar {
@@ -53,26 +66,15 @@ body {
     overflow: hidden;
 }
 
-    .dropdown-menu a {
-        display: block;
-        padding: 10px;
-        text-decoration: none;
-        color: black;
-    }
-
-        .dropdown-menu a:hover {
-            background-color: #f0f0f0;
-        }
-
-.controls {
-    display: flex;
-    align-items: center;
-    margin-right: 15px;
+.dropdown-menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
 }
 
-.refresh-interval {
-    display: flex;
-    align-items: center;
+.dropdown-menu a:hover {
+    background-color: #f0f0f0;
 }
 
 .container {
@@ -101,7 +103,7 @@ body {
 
 .list {
     list-style-type: none;
-    padding: 0;
+    padding: 5px 10px 5px 0px;
     margin: 0;
 }
 
@@ -118,7 +120,7 @@ body {
 }
 
 .draggable {
-    padding: 5px;
+    padding: 5px 10px;
     margin: 5px 0;
     background-color: #f0f0f0;
     border-radius: 5px;
@@ -126,11 +128,13 @@ body {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
+    height: auto;
+    min-height: 26px;
 }
 
 .username {
-    flex-grow: 1; /* This allows the username to take up available space */
-    margin-left: 10px; /* Add space between the checkbox and the username */
+    flex-grow: 1;
+    margin-left: 10px;
 }
 
 .adjust-lives,
@@ -144,7 +148,7 @@ body {
 }
 
 .highlight {
-    background-color: yellow;
+    background-color: pink;
     font-weight: bold;
 }
 
@@ -176,6 +180,66 @@ body {
     background-color: #f0f0f0;
 }
 
+/* login screen style */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: #45a049;
+}
+
+.login-container .show-password-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 25px;
+    font-size: 14px;
+}
+
+.lysspie-login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 25px;
+}
+
 /* Custom scrollbar styles */
 .queue-container::-webkit-scrollbar,
 .lives-container::-webkit-scrollbar {
@@ -193,7 +257,155 @@ body {
     border-radius: 5px;
 }
 
-    .queue-container::-webkit-scrollbar-thumb:hover,
-    .lives-container::-webkit-scrollbar-thumb:hover {
-        background: #555;
+.queue-container::-webkit-scrollbar-thumb:hover,
+.lives-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 20vh auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.profile-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    justify-content: center;
+}
+
+.profile-details input[type="text"],
+.profile-details input[type="password"] {
+    width: auto;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.profile-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.profile-details button {
+    width: auto;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.profile-details button:hover {
+    background-color: #45a049;
+}
+
+.settings-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.settings-menu {
+    flex: 1;
+}
+
+.settings-menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+.settings-menu li {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.settings-menu li:hover {
+    background-color: #f0f0f0;
+}
+
+.settings-content {
+    flex: 3;
+    padding-left: 20px;
+}
+
+.settings-section {
+    display: none;
+}
+
+#general-settings {
+    display: block;
+}
+
+/* Media Queries for mobile handling */
+@media (max-width: 768px) {
+    .header {
+        justify-content: space-between;
+        padding: 10px 1em;
     }
+
+    .right-controls {
+        padding-right: 0;
+    }
+
+    .container {
+        flex-direction: column;
+        align-items: center;
+        padding: 0 1em;
+    }
+
+    .column {
+        width: 80%;
+        margin-bottom: 20px;
+    }
+
+    .login-container,
+    .modal-content {
+        width: 80%;
+    }
+}

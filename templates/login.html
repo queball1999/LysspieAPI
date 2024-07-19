@@ -3,56 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <style>
-        body {
-            background-color: pink;
-            font-family: Arial, sans-serif;
-        }
-
-        .login-container {
-            width: 300px;
-            margin: 100px auto;
-            padding: 20px;
-            background-color: white;
-            border: 2px solid white;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        input[type="text"], input[type="password"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-    </style>
+    <title>Dashboard Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <input type="text" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p id="error-message" style="color: red;"></p>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="lysspie-login-logo">
+                <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Lysspie">
+            </div>
+            <input type="text" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <div class="show-password-container">
+                <input type="checkbox" id="show-password" onclick="togglePassword()"> Show Password
+            </div>
+            <button onclick="login()">Login</button>
+            <p id="error-message" style="color: red;"></p>
+        </div>
     </div>
 
     <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+            } else {
+                passwordField.type = 'password';
+            }
+        }
+
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('error-message');
 
             fetch('/login', {
                 method: 'POST',
@@ -61,17 +44,35 @@
                 },
                 body: JSON.stringify({ email, password })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.access_token) {
-                        console.log(`Storing JWT Token: ${data.access_token}`);  // Debug print
-                        localStorage.setItem('token', data.access_token);
-                        window.location.href = '/dashboard';
-                    } else {
-                        errorMessage.textContent = data.msg;
-                    }
-                });
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    throw new Error('Login failed');
+                }
+            })
+            .then(data => {
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('api_key', data.api_key);  // Store the API key
+                window.location.href = '/dashboard';
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Login failed');
+            });
         }
+
+        // Submit login on Enter key press
+        document.getElementById('email').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
+        document.getElementById('password').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
     </script>
 </body>
 </html>

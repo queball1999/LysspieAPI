@@ -3,34 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LysspieAPI Dashboard</title>
+    <title>Lysspie Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
     <div class="header">
         <a href="#" class="site-title-icon">
             <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Home">
         </a>
-        <div class="controls">
-            <div class="refresh-interval">
+        <div class="right-controls">
+            <div class="refresh">
                 <button onclick="fetchData()">Refresh</button>
-                <select id="interval" onchange="setRefreshInterval()">
-                    <option value="1000">1 Second</option>
-                    <option value="5000" selected>5 Seconds</option>
-                    <option value="10000">10 Seconds</option>
-                    <option value="30000">30 Seconds</option>
-                    <option value="60000">1 Minute</option>
-                </select>
             </div>
-        </div>
-        <div class="avatar" onclick="toggleDropdown()">
-            <span id="avatar-text"></span>
-            <div class="dropdown-menu" id="dropdown-menu">
-                <a href="#">Settings</a>
-                <a href="#">Profile</a>
-                <a href="#">Help</a>
-                <a href="#" onclick="logout()">Logout</a>
+        
+            <div class="avatar" onclick="toggleDropdown()">
+                <span id="avatar-text"></span>
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <a href="#" onclick="openSettings()">Settings</a>
+                    <a href="#" onclick="openProfile()">Profile</a>
+                    <a href="#">Help</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </div>
             </div>
         </div>
     </div>
@@ -41,7 +36,7 @@
             <input type="number" id="spin-count" min="1" max="100" value="1">
             <button onclick="spinQueue()">Spin</button>
             <button onclick="clearSpin()">Clear Spin</button>
-            <button class="clear-queue-btn" onclick="cleanQueue()">Clear Queue</button>
+            <button class="clear-queue-btn" onclick="openClearQueueModal()">Clear Queue</button>
             <button class="toggle-view-btn" onclick="toggleView('queue-list')">Grid</button>
             <div class="queue-container">
                 <ol id="queue-list" class="list">
@@ -54,7 +49,7 @@
             <div class="lives-controls">
                 <input type="checkbox" id="select-all-lives" onclick="toggleSelectAllLives(this)">
                 <button class="bulk-ban-btn" onclick="bulkBanUsers()" disabled>Bulk Ban</button>
-                <button class="bulk-clear-btn" onclick="bulkClearLives()" disabled>Bulk Clear</button>
+                <button class="bulk-clear-btn" onclick="openClearLivesModal()" disabled>Bulk Clear</button>
             </div>
             <button class="toggle-view-btn" onclick="toggleView('lives-list')">Grid</button>
             <div class="lives-container">
@@ -62,6 +57,99 @@
                     <!-- Lives items will be inserted here by JavaScript -->
                 </ul>
             </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <div class="settings-container">
+                <div class="settings-menu">
+                    <ul>
+                        <li onclick="showGeneralSettings()">General</li>
+                        <li onclick="showUserManagement()">User Management</li>
+                    </ul>
+                </div>
+                <div class="settings-content">
+                    <div id="general-settings" class="settings-section">
+                        <h3>General Settings</h3>
+                        <!-- Add general settings content here -->
+                    </div>
+                    <div id="user-management" class="settings-section">
+                        <h3>User Management</h3>
+                        <!-- Add user management content here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProfile()">&times;</span>
+            <h2>Profile</h2>
+            <div class="profile-container">
+                <div class="profile-details">
+                    <label for="display-name">Display Name:</label>
+                    <input type="text" id="display-name" value="">
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" value="********" onfocus="clearPassword()">
+
+                    <label for="api-key">API Key:</label>
+                    <input type="text" id="api-key" readonly>
+                    <div class="profile-buttons">
+                        <button onclick="resetApiKey()">Reset API Key</button>
+                        <button onclick="saveProfile()">Save Changes</button>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Session Continuation Modal -->
+    <div id="session-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSessionModal()">&times;</span>
+            <p>Your session is about to expire. Do you want to continue your session?</p>
+            <button onclick="continueSession()">Yes</button>
+            <button onclick="logout()">No</button>
+        </div>
+    </div>
+
+    <!-- Clear Queue Confirmation Modal -->
+    <div id="clear-queue-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeClearQueueModal()">&times;</span>
+            <p>Are you sure you want to clear the queue? This action cannot be undone.</p>
+            <button onclick="clearQueue()">Yes, Clear Queue</button>
+            <button onclick="closeClearQueueModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Clear Lives Confirmation Modal -->
+    <div id="clear-lives-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeClearLivesModal()">&times;</span>
+            <p>Are you sure you want to clear selected users from the lives list? This action cannot be undone.</p>
+            <button onclick="bulkClearLives()">Yes, Clear Lives</button>
+            <button onclick="closeClearLivesModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Remove User Confirmation Modal -->
+    <div id="remove-user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRemoveUserModal()">&times;</span>
+            <p id="remove-user-message"></p>
+            <input type="hidden" id="remove-user-username">
+            <button onclick="removeUser()">Yes</button>
+            <button onclick="closeRemoveUserModal()">No</button>
         </div>
     </div>
 
@@ -79,6 +167,7 @@
 
         function logout() {
             localStorage.removeItem('token');
+            localStorage.removeItem('api_key');
             window.location.href = '/login';
         }
 

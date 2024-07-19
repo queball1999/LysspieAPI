@@ -1,147 +1,218 @@
-﻿let refreshInterval = 5000; // Default to 5 seconds
+﻿/**
+ * Initialize necessary variables
+ */
 let intervalId;
+let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minutes
+let timeoutWarning = 60000; // Set to 1 minute timeout
+let activityTimeout;
 
+// Initialize socket connection
+const socket = io();
+
+/**
+ * Handle server-sent events (SSE) to refresh data on receiving an update
+ */
+socket.on('update', function(data) {
+    console.log(data.message);
+    fetchData(); // Refresh data on receiving an update
+    resetActivityTimeout();
+});
+
+/**
+ * Check response status and handle unauthorized errors
+ * @param {Response} response - The fetch response object
+ * @returns {Response} - The fetch response object if no error
+ */
+function checkAuth(response) {
+    console.log(`Auth check: ${response.status}`);
+    if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        window.location.href = '/login';
+    }
+    return response;
+}
+
+/**
+ * Retrieve highlighted users from local storage
+ * @returns {Array} - List of highlighted users
+ */
 function getHighlightedUsers() {
     return JSON.parse(localStorage.getItem('highlightedUsers')) || [];
 }
 
+/**
+ * Save highlighted users to local storage
+ * @param {Array} users - List of highlighted users
+ */
 function saveHighlightedUsers(users) {
     localStorage.setItem('highlightedUsers', JSON.stringify(users));
 }
 
+/**
+ * Retrieve queue order from local storage
+ * @returns {Array} - List of queue order
+ */
 function getQueueOrder() {
     return JSON.parse(localStorage.getItem('queueOrder')) || [];
 }
 
+/**
+ * Save queue order to local storage
+ * @param {Array} order - List of queue order
+ */
 function saveQueueOrder(order) {
     localStorage.setItem('queueOrder', JSON.stringify(order));
 }
 
+/**
+ * Retrieve selected lives users from local storage
+ * @returns {Array} - List of selected lives users
+ */
 function getSelectedLivesUsers() {
     return JSON.parse(localStorage.getItem('selectedLivesUsers')) || [];
 }
 
+/**
+ * Save selected lives users to local storage
+ * @param {Array} users - List of selected lives users
+ */
 function saveSelectedLivesUsers(users) {
     localStorage.setItem('selectedLivesUsers', JSON.stringify(users));
 }
 
+/**
+ * Fetch data from the server and update the UI
+ */
 function fetchData() {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
         window.location.href = '/login';
         return;
     }
 
-    fetch('/api/queue', {
-        headers: { 'Authorization': `Bearer ${token}` }
+    // Fetch queue order
+    fetch('/api/get_queue_order', {
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        }
     })
-        .then(response => {
-            if (response.status === 401) {
-                window.location.href = '/login';
-            }
-            return response.json();
-        })
-        .then(data => {
-            const highlightedUsers = getHighlightedUsers();
-            const queueOrder = getQueueOrder();
-            const queueList = document.getElementById('queue-list');
-            queueList.innerHTML = '';
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        const queueOrder = data.queue_order;
+        const queueList = document.getElementById('queue-list');
+        queueList.innerHTML = '';
 
-            const orderedQueue = data.queue.sort((a, b) => {
-                const indexA = queueOrder.indexOf(a.username);
-                const indexB = queueOrder.indexOf(b.username);
-                return (indexA === -1 ? queueOrder.length : indexA) - (indexB === -1 ? queueOrder.length : indexB);
-            });
-
-            orderedQueue.forEach(user => {
-                const li = document.createElement('li');
-                li.classList.add('draggable');
-                li.setAttribute('draggable', true);
-                li.dataset.username = user.username;
-                li.innerHTML = `
-                <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${highlightedUsers.includes(user.username) ? 'checked' : ''}>
+        queueOrder.forEach(user => {
+            const li = document.createElement('li');
+            li.classList.add('draggable');
+            li.setAttribute('draggable', true);
+            li.dataset.username = user.username;
+            li.innerHTML = `
+                <input type="checkbox" class="highlight-checkbox" onchange="toggleHighlight(this)" ${user.highlighted ? 'checked' : ''}>
                 <span class="username">${user.username}</span>
-                <button class="remove-btn" onclick="removeUser('${user.username}')">x</button>
+                <button class="remove-btn" onclick="openRemoveUserModal('${user.username}')">x</button>
             `;
-                if (highlightedUsers.includes(user.username)) {
-                    li.classList.add('highlight');
-                }
-                queueList.appendChild(li);
-            });
-            addDragAndDropListeners();
-        });
-
-    fetch('/api/lives', {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-        .then(response => {
-            if (response.status === 401) {
-                window.location.href = '/login';
+            if (user.highlighted) {
+                li.classList.add('highlight');
             }
-            return response.json();
-        })
-        .then(data => {
-            const livesList = document.getElementById('lives-list');
-            const selectedLivesUsers = getSelectedLivesUsers();
-            livesList.innerHTML = '';
-            data.lives.forEach(user => {
-                const li = document.createElement('li');
-                li.classList.add('draggable');
-                li.setAttribute('draggable', true);
-                li.dataset.username = user.username;
-                li.innerHTML = `
-                <input type="checkbox" class="highlight-checkbox" onchange="toggleSelectLivesUser(this)" ${selectedLivesUsers.includes(user.username) ? 'checked' : ''}>
+            queueList.appendChild(li);
+        });
+        addDragAndDropListeners('queue-list');
+    });
+
+    // Fetch lives order
+    fetch('/api/get_lives_order', {
+        headers: { 
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        }
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        const livesOrder = data.lives_order;
+        const livesList = document.getElementById('lives-list');
+        livesList.innerHTML = '';
+
+        livesOrder.forEach(user => {
+            const li = document.createElement('li');
+            li.classList.add('draggable');
+            li.setAttribute('draggable', true);
+            li.dataset.username = user.username;
+            li.innerHTML = `
+                <input type="checkbox" class="highlight-checkbox" onchange="toggleSelectLivesUser(this)" ${user.highlighted ? 'checked' : ''}>
                 <span class="username">${user.username} - ${user.lives} lives left</span>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', 1)">+1</button>
                 <button class="adjust-lives" onclick="adjustLives('${user.username}', -1)">-1</button>
             `;
-                livesList.appendChild(li);
-            });
-            toggleBulkButtons();
+            if (user.highlighted) {
+                li.classList.add('highlight');
+            }
+            livesList.appendChild(li);
         });
+        addDragAndDropListeners('lives-list');
+    });
 }
 
-function setRefreshInterval() {
-    const intervalSelect = document.getElementById('interval');
-    refreshInterval = parseInt(intervalSelect.value, 10);
-    clearInterval(intervalId);
-    intervalId = setInterval(fetchData, refreshInterval);
-}
-
-function cleanQueue() {
+/**
+ * Clear the queue
+ */
+function clearQueue() {
     const token = localStorage.getItem('token');
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
+        window.location.href = '/login';
+        return;
+    }
+
+    fetch('/api/clear_queue', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        }
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.text())
+    .then(data => {
+        console.log('Queue cleared successfully'); // Log message instead of fetching data
+        closeClearQueueModal();
+    });
+}
+
+/**
+ * Remove a user from the queue
+ */
+function removeUser() {
+    const token = localStorage.getItem('token');
+    const user = document.getElementById('remove-user-username').value;
+
     if (!token) {
         window.location.href = '/login';
         return;
     }
 
-    fetch('/api/clean_queue', {
+    fetch(`/api/remove_user?username=${user}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-        .then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.text())
+    .then(data => {
+        console.log('User removed successfully'); // Log message instead of fetching data
+        closeRemoveUserModal();
+    });
 }
 
-function removeUser(username) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login';
-        return;
-    }
-
-    fetch(`/api/remove_user?username=${username}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-        .then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
-}
-
+/**
+ * Adjust the number of lives for a user
+ * @param {string} username - Username of the user
+ * @param {number} amount - Amount to adjust the lives by
+ */
 function adjustLives(username, amount) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -153,12 +224,16 @@ function adjustLives(username, amount) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-        .then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        console.log(`Adjusted lives for ${username}`); // Log message instead of fetching data
+    });
 }
 
+/**
+ * Bulk ban users
+ */
 function bulkBanUsers() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -177,12 +252,16 @@ function bulkBanUsers() {
         },
         body: JSON.stringify({ usernames: usernames })
     })
-        .then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        console.log('Bulk banned users successfully'); // Log message instead of fetching data
+    });
 }
 
+/**
+ * Bulk clear lives for users
+ */
 function bulkClearLives() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -193,7 +272,7 @@ function bulkClearLives() {
     const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox:checked');
     const usernames = Array.from(checkboxes).map(checkbox => checkbox.parentElement.dataset.username);
 
-    fetch('/api/bulk_clear', {
+    fetch('/api/clear_lives', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -201,12 +280,18 @@ function bulkClearLives() {
         },
         body: JSON.stringify({ usernames: usernames })
     })
-        .then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        console.log('Bulk cleared lives successfully'); // Log message instead of fetching data
+        closeClearLivesModal();
+    });
 }
 
+/**
+ * Ban a user
+ * @param {string} username - Username of the user to ban
+ */
 function banUser(username) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -218,15 +303,20 @@ function banUser(username) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
     })
-        .then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
+    .then(checkAuth)    
+    .then(response => response.text())
+    .then(data => {
+        console.log(`Banned user ${username}`); // Log message instead of fetching data
+    });
 }
 
-function addDragAndDropListeners() {
-    const draggables = document.querySelectorAll('.draggable');
-    const queueList = document.getElementById('queue-list');
+/**
+ * Add drag and drop listeners to the draggable elements
+ * @param {string} listId - The ID of the list element
+ */
+function addDragAndDropListeners(listId) {
+    const draggables = document.querySelectorAll(`#${listId} .draggable`);
+    const list = document.getElementById(listId);
 
     draggables.forEach(draggable => {
         draggable.addEventListener('dragstart', () => {
@@ -235,22 +325,28 @@ function addDragAndDropListeners() {
 
         draggable.addEventListener('dragend', () => {
             draggable.classList.remove('dragging');
-            updateQueueOrder();
+            updateOrder(listId);
         });
     });
 
-    queueList.addEventListener('dragover', e => {
+    list.addEventListener('dragover', e => {
         e.preventDefault();
-        const afterElement = getDragAfterElement(queueList, e.clientY);
+        const afterElement = getDragAfterElement(list, e.clientY);
         const dragging = document.querySelector('.dragging');
         if (afterElement == null) {
-            queueList.appendChild(dragging);
+            list.appendChild(dragging);
         } else {
-            queueList.insertBefore(dragging, afterElement);
+            list.insertBefore(dragging, afterElement);
         }
     });
 }
 
+/**
+ * Get the element to insert the dragged item after
+ * @param {HTMLElement} container - The container element
+ * @param {number} y - The y-coordinate of the drag event
+ * @returns {HTMLElement} - The element to insert after
+ */
 function getDragAfterElement(container, y) {
     const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
 
@@ -265,10 +361,14 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-function updateQueueOrder() {
-    const queueList = document.getElementById('queue-list');
-    const queueItems = queueList.querySelectorAll('.draggable');
-    const usernames = Array.from(queueItems).map(item => item.dataset.username);
+/**
+ * Update the order and save it
+ * @param {string} listId - The ID of the list element
+ */
+function updateOrder(listId) {
+    const list = document.getElementById(listId);
+    const items = list.querySelectorAll('.draggable');
+    const usernames = Array.from(items).map(item => item.dataset.username);
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -276,21 +376,27 @@ function updateQueueOrder() {
         return;
     }
 
-    fetch('/api/update_queue_order', {
+    const endpoint = listId === 'queue-list' ? '/api/update_queue_order' : '/api/update_lives_order';
+
+    fetch(endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ order: usernames })
-    }).then(response => response.text())
-        .then(data => {
-            fetchData();
-        });
-
-    saveQueueOrder(usernames);
+    })
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        //fetchData();
+        console.log('Order updated successfully');
+    });
 }
 
+/**
+ * Spin the queue to select random users
+ */
 function spinQueue() {
     const spinCount = parseInt(document.getElementById('spin-count').value);
     const queueList = document.getElementById('queue-list');
@@ -311,16 +417,53 @@ function spinQueue() {
         chosenUsers.push(chosenUser);
     }
 
-    const highlightedUsers = getHighlightedUsers();
-    const newHighlightedUsers = chosenUsers.map(user => user.dataset.username);
-    saveHighlightedUsers([...new Set([...highlightedUsers, ...newHighlightedUsers])]);
+    const highlightedUsers = chosenUsers.map(user => user.dataset.username);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Update highlighted users in the backend
+    fetch('/api/update_highlighted_users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ highlighted_users: highlightedUsers })
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        //fetchData();
+        console.log('Spun successfully');
+    });
 
     chosenUsers.forEach(user => queueList.prepend(user));
 
     const currentOrder = Array.from(queueList.children).map(item => item.dataset.username);
-    saveQueueOrder(currentOrder);
+
+    fetch('/api/update_queue_order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ order: currentOrder })
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        //fetchData();
+        console.log('Queue updated successfully');
+    });
 }
 
+/**
+ * Clear the spin highlight
+ */
 function clearSpin() {
     const highlightedUsers = document.querySelectorAll('.highlight');
     highlightedUsers.forEach(user => {
@@ -329,8 +472,32 @@ function clearSpin() {
     });
     saveHighlightedUsers([]);
     saveQueueOrder([]);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Clear highlights in the backend
+    fetch('/api/clear_highlighted_users', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        //fetchData();
+        console.log('Spin selection cleared successfully');
+    });
 }
 
+/**
+ * Toggle highlight for a user
+ * @param {HTMLElement} checkbox - The checkbox element
+ */
 function toggleHighlight(checkbox) {
     const listItem = checkbox.parentElement;
     const username = listItem.dataset.username;
@@ -350,8 +517,33 @@ function toggleHighlight(checkbox) {
     }
 
     saveHighlightedUsers(highlightedUsers);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    fetch('/api/update_highlighted_users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ highlighted_users: highlightedUsers })
+    })
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        //fetchData();
+        console.log('Highlighted users updated successfully');
+    });
 }
 
+/**
+ * Toggle select lives user
+ * @param {HTMLElement} checkbox - The checkbox element
+ */
 function toggleSelectLivesUser(checkbox) {
     const listItem = checkbox.parentElement;
     const username = listItem.dataset.username;
@@ -369,9 +561,36 @@ function toggleSelectLivesUser(checkbox) {
     }
 
     saveSelectedLivesUsers(selectedLivesUsers);
+
+    const token = localStorage.getItem('token');
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
+        window.location.href = '/login';
+        return;
+    }
+
+    fetch('/api/update_highlighted_lives', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({ highlighted_users: selectedLivesUsers })
+    })
+    .then(checkAuth)
+    .then(response => response.text())
+    .then(data => {
+        //fetchData();
+        console.log('Highlighted users updated successfully');
+    });
+
     toggleBulkButtons();
 }
 
+/**
+ * Toggle bulk buttons based on the selected lives users
+ */
 function toggleBulkButtons() {
     const selectedLivesUsers = getSelectedLivesUsers();
     const bulkBanBtn = document.querySelector('.bulk-ban-btn');
@@ -381,15 +600,65 @@ function toggleBulkButtons() {
     bulkClearBtn.disabled = selectedLivesUsers.length === 0;
 }
 
+/**
+ * Toggle select all lives users
+ * @param {HTMLElement} checkbox - The checkbox element
+ */
 function toggleSelectAllLives(checkbox) {
     const checkboxes = document.querySelectorAll('#lives-list .highlight-checkbox');
+    const selectedLivesUsers = [];
+
     checkboxes.forEach(cb => {
         cb.checked = checkbox.checked;
-        toggleSelectLivesUser(cb);
+        const listItem = cb.parentElement;
+        const username = listItem.dataset.username;
+
+        if (checkbox.checked) {
+            if (!selectedLivesUsers.includes(username)) {
+                selectedLivesUsers.push(username);
+            }
+            listItem.classList.add('highlight');
+        } else {
+            const index = selectedLivesUsers.indexOf(username);
+            if (index !== -1) {
+                selectedLivesUsers.splice(index, 1);
+            }
+            listItem.classList.remove('highlight');
+        }
     });
+
+    saveSelectedLivesUsers(selectedLivesUsers);
+
+    const token = localStorage.getItem('token');
+    const apiKey = localStorage.getItem('api_key');
+    if (!token || !apiKey) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Update highlighted users in the backend
+    fetch('/api/update_highlighted_lives', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({ highlighted_users: selectedLivesUsers })
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        console.log('Highlighted users updated successfully');
+    });
+
     toggleBulkButtons();
 }
 
+/**
+ * Toggle the view between list and grid
+ * @param {string} listId - The ID of the list element
+ */
 function toggleView(listId) {
     const list = document.getElementById(listId);
     list.classList.toggle('grid-view');
@@ -401,5 +670,254 @@ function toggleView(listId) {
     }
 }
 
+/**
+ * Open the settings modal
+ */
+function openSettings() {
+    document.getElementById('settings-modal').style.display = 'block';
+}
+
+/**
+ * Close the settings modal
+ */
+function closeSettings() {
+    document.getElementById('settings-modal').style.display = 'none';
+}
+
+/**
+ * Show the general settings section
+ */
+function showGeneralSettings() {
+    document.getElementById('general-settings').style.display = 'block';
+    document.getElementById('user-management').style.display = 'none';
+}
+
+/**
+ * Show the user management section
+ */
+function showUserManagement() {
+    document.getElementById('general-settings').style.display = 'none';
+    document.getElementById('user-management').style.display = 'block';
+}
+
+/**
+ * Open the profile modal
+ */
+function openProfile() {
+    document.getElementById('profile-modal').style.display = 'block';
+    const token = localStorage.getItem('token');
+    const email = atob(token.split('.')[1]);
+    const username = JSON.parse(email).sub;
+    document.getElementById('display-name').value = username;
+    
+    // Fetch and set API key from server
+    fetch('/api/get_api_key', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('api-key').value = data.api_key;
+    });
+}
+
+/**
+ * Close the profile modal
+ */
+function closeProfile() {
+    document.getElementById('profile-modal').style.display = 'none';
+}
+
+/**
+ * Clear the password field when focused
+ */
+function clearPassword() {
+    document.getElementById('password').value = '';
+}
+
+/**
+ * Reset the API key
+ */
+function resetApiKey() {
+    const token = localStorage.getItem('token');
+
+    fetch('/api/reset_api_key', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('api-key').value = data.api_key;
+    });
+}
+
+/**
+ * Save the profile information
+ */
+function saveProfile() {
+    const displayName = document.getElementById('display-name').value;
+    const password = document.getElementById('password').value;
+    const apiKey = document.getElementById('api-key').value;
+
+    fetch('/api/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ display_name: displayName, password: password !== '••••••••' ? password : '', api_key: apiKey })
+    })
+    .then(checkAuth) // Check for unauthorized status
+    .then(response => response.json())
+    .then(data => {
+        closeProfile();
+        //fetchData();
+        console.log('Profile saved successfully');
+    });
+}
+
+/**
+ * Open the clear queue modal
+ */
+function openClearQueueModal() {
+    document.getElementById('clear-queue-modal').style.display = 'block';
+}
+
+/**
+ * Close the clear queue modal
+ */
+function closeClearQueueModal() {
+    document.getElementById('clear-queue-modal').style.display = 'none';
+}
+
+/**
+ * Open the clear lives modal
+ */
+function openClearLivesModal() {
+    document.getElementById('clear-lives-modal').style.display = 'block';
+}
+
+/**
+ * Close the clear lives modal
+ */
+function closeClearLivesModal() {
+    document.getElementById('clear-lives-modal').style.display = 'none';
+}
+
+// Function to open the remove user confirmation modal
+function openRemoveUserModal(username) {
+    document.getElementById('remove-user-username').value = `${username}`;
+    document.getElementById('remove-user-message').textContent = `Are you sure you want to remove ${username} from the queue? This action cannot be undone.`;
+    document.getElementById('remove-user-modal').style.display = 'block';
+}
+
+// Function to close the remove user confirmation modal
+function closeRemoveUserModal() {
+    userToRemove = null;
+    document.getElementById('remove-user-modal').style.display = 'none';
+}
+
+/**
+ * Set the last activity time in local storage
+ */
+function setLastActivityTime() {
+    localStorage.setItem('lastActivityTime', new Date().getTime());
+}
+
+/**
+ * Get the last activity time from local storage
+ * @returns {number} - The timestamp of the last activity
+ */
+function getLastActivityTime() {
+    return parseInt(localStorage.getItem('lastActivityTime')) || new Date().getTime();
+}
+
+/**
+ * Check for inactivity and log out the user if the timeout has expired
+ */
+function checkInactivity() {
+    const currentTime = new Date().getTime();
+    const lastActivityTime = getLastActivityTime();
+    const timeElapsed = currentTime - lastActivityTime;
+
+    if (timeElapsed > timeoutDuration) {
+        logout();
+    } else if (timeElapsed > timeoutDuration - timeoutWarning) {
+        openSessionModal();
+    }
+}
+
+/**
+ * Log out the user
+ */
+function logout() {
+    alert("You are now logged out due to inactivity.");
+    window.location.href = '/login';
+}
+
+/**
+ * Open the session continuation modal
+ */
+function openSessionModal() {
+    document.getElementById('session-modal').style.display = 'block';
+
+    // Start another timer to log out the user if no action is taken
+    const logoutTimeout = setTimeout(() => {
+        if (document.getElementById('session-modal').style.display === 'block') {
+            logout();
+        }
+    }, timeoutWarning); // Remaining time to log out
+}
+
+/**
+ * Close the session continuation modal
+ */
+function closeSessionModal() {
+    document.getElementById('session-modal').style.display = 'none';
+}
+
+/**
+ * Continue the session by closing the modal and resetting the activity timeout
+ */
+function continueSession() {
+    closeSessionModal();
+    setLastActivityTime();
+    resetActivityTimeout();
+}
+
+/**
+ * Reset the activity timeout
+ */
+function resetActivityTimeout() {
+    clearTimeout(activityTimeout);
+    setLastActivityTime();
+    activityTimeout = setTimeout(() => {
+        openSessionModal();
+    }, timeoutDuration - timeoutWarning);
+}
+
+// Event listeners to reset activity timeout on various user actions
+document.addEventListener('mousemove', resetActivityTimeout);
+document.addEventListener('keypress', resetActivityTimeout);
+document.addEventListener('mousedown', resetActivityTimeout); // for mobile
+document.addEventListener('touchstart', resetActivityTimeout); // for mobile
+document.addEventListener('scroll', resetActivityTimeout);
+
+/**
+ * Handle visibility change event
+ */
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        checkInactivity();
+    }
+});
+
+// Initial functions
 fetchData();
-intervalId = setInterval(fetchData, refreshInterval);
+resetActivityTimeout();
+setLastActivityTime();

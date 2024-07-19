@@ -1,20 +1,22 @@
 import os
+import secrets
 import socket
 import sys
-from flask import Flask
+
+# load .env
 from dotenv import load_dotenv
+load_dotenv()
+
+from flask import Flask
 from flask.logging import create_logger
 from flask_jwt_extended import JWTManager
-
-##FIXME:
-# - JWT timeout seems to work, but I need to make sure it only "starts" when there is no activity. basically with every user input, we can refresh timeout?
-#    - Remove revoking jwt when navigating away from page. Only want to do time based JWT.
 
 # Custom module imports
 from endpoints import *
 
-# load .env
-load_dotenv()
+# FIXME:
+#       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -31,18 +33,12 @@ DATABASE_TYPE = os.getenv('DATABASE', 'POSTGRES').upper()
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = None
 SECRET_KEY = os.getenv('SECRET_KEY')
-JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 APP_DEFAULT_EMAIL = os.getenv('APP_DEFAULT_EMAIL').lower()
 APP_DEFAULT_PASSWORD = os.getenv('APP_DEFAULT_PASSWORD')
 
-# Set Flask configurations
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = SECRET_KEY
-app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600)))
-
 # Initialize JWT
 jwt = JWTManager(app)
+socketio.init_app(app)
 
 # Parse variables and determine best database URI
 if DATABASE_TYPE == 'POSTGRES':
@@ -53,16 +49,18 @@ else:
     log.error("Unsupported DATABASE type; only 'POSTGRES' or 'MYSQL' are valid.")
     print("Unsupported DATABASE type; only 'POSTGRES' or 'MYSQL' are valid.")
     sys.exit(1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-log.info(f'{DATABASE_TYPE} database configuration loaded.')
-
+    
+# Set Flask configurations
+app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI    
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # Register blueprints
 app.register_blueprint(database_bp)
 app.register_blueprint(queue_bp)
 app.register_blueprint(ninelives_bp)
 app.register_blueprint(dashboard_bp)
+app.register_blueprint(user_bp)
 app.register_blueprint(auth_bp)
 
 # Initialize extensions
@@ -74,7 +72,8 @@ with app.app_context():
     try:
         db.create_all()
         if not User.query.filter_by(email=APP_DEFAULT_EMAIL).first():
-            default_user = User(email=APP_DEFAULT_EMAIL, password=APP_DEFAULT_PASSWORD)
+            api_key = User.generate_api_key()
+            default_user = User(email=APP_DEFAULT_EMAIL, password=APP_DEFAULT_PASSWORD, api_key=api_key, role='admin')
             db.session.add(default_user)
             db.session.commit()
     except Exception as e:
@@ -87,7 +86,7 @@ if __name__ == '__main__':
     host = socket.gethostname()
     IP = socket.gethostbyname(host)
     try:
-        app.run(host=IP, port=5000, debug=DEBUG)
+        socketio.run(app, host=IP, port=5000, debug=DEBUG)
     except Exception as e:
         log.error(f"Failed to start the Flask server: {e}")
         print(f"Failed to start the Flask server: {e}")
