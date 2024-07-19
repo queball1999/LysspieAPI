@@ -300,30 +300,23 @@ body {
     cursor: pointer;
 }
 
-.settings-container,
 .profile-container {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.profile-details, .avatar-section {
-    flex: 1;
-    margin: 10px;
+    align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
-.profile-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    justify-content: center;
 }
 
 .profile-details input[type="text"],
 .profile-details input[type="password"] {
-    width: 100%;
+    width: auto;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
@@ -336,7 +329,7 @@ body {
     margin-top: 10px;
 }
 
-.profile-buttons button {
+.profile-details button {
     width: auto;
     padding: 10px;
     background-color: #4CAF50;
@@ -344,11 +337,18 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin: 5px;
+    margin-right: 10px;
 }
 
-.profile-buttons button:hover {
+.profile-details button:hover {
     background-color: #45a049;
+}
+
+.settings-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
 }
 
 .settings-menu {
@@ -382,13 +382,6 @@ body {
     display: block;
 }
 
-.profile-container input {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
 /* Media Queries for mobile handling */
 @media (max-width: 768px) {
     .header {
@@ -411,7 +404,8 @@ body {
         margin-bottom: 20px;
     }
 
-    .login-container .modal-content {
-        width: 75%;
+    .login-container,
+    .modal-content {
+        width: 80%;
     }
 }

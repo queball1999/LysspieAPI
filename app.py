@@ -36,8 +36,6 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 APP_DEFAULT_EMAIL = os.getenv('APP_DEFAULT_EMAIL').lower()
 APP_DEFAULT_PASSWORD = os.getenv('APP_DEFAULT_PASSWORD')
 
-
-
 # Initialize JWT
 jwt = JWTManager(app)
 socketio.init_app(app)

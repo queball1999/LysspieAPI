@@ -2,7 +2,7 @@
  * Initialize necessary variables
  */
 let intervalId;
-let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minutes
+let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 80000; // Default to 15 minutes
 let timeoutWarning = 60000; // Set to 1 minute timeout
 let activityTimeout;
 
@@ -661,61 +661,6 @@ function clearPassword() {
 }
 
 /**
- * Upload avatar image
- */
-function uploadAvatar() {
-    const fileInput = document.getElementById('avatar-upload');
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('avatar', file);
-
-    fetch('/api/upload_avatar', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        const avatarUrl = data.avatar_url;
-        document.getElementById('profile-avatar').src = avatarUrl;
-        document.getElementById('avatar-text').style.display = 'none';
-        document.querySelector('.avatar').style.backgroundImage = `url(${avatarUrl})`;
-        document.querySelector('.avatar').style.backgroundSize = 'cover';
-    });
-}
-
-/**
- * Set the default avatar or initials in the header
- */
-function setAvatar() {
-    const email = atob(token.split('.')[1]);
-    const username = JSON.parse(email).sub;
-    const avatarText = document.getElementById('avatar-text');
-    const avatarElement = document.querySelector('.avatar');
-    
-    avatarText.textContent = username.slice(0, 2).toUpperCase();
-
-    fetch('/api/get_user_avatar', {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.avatar_url) {
-            avatarText.style.display = 'none';
-            avatarElement.style.backgroundImage = `url(${data.avatar_url})`;
-            avatarElement.style.backgroundSize = 'cover';
-        } else {
-            avatarText.style.display = 'block';
-            avatarElement.style.backgroundImage = 'none';
-        }
-    });
-}
-
-/**
  * Reset the API key
  */
 function resetApiKey() {
@@ -799,6 +744,44 @@ function closeRemoveUserModal() {
 }
 
 /**
+ * Set the last activity time in local storage
+ */
+function setLastActivityTime() {
+    localStorage.setItem('lastActivityTime', new Date().getTime());
+}
+
+/**
+ * Get the last activity time from local storage
+ * @returns {number} - The timestamp of the last activity
+ */
+function getLastActivityTime() {
+    return parseInt(localStorage.getItem('lastActivityTime')) || new Date().getTime();
+}
+
+/**
+ * Check for inactivity and log out the user if the timeout has expired
+ */
+function checkInactivity() {
+    const currentTime = new Date().getTime();
+    const lastActivityTime = getLastActivityTime();
+    const timeElapsed = currentTime - lastActivityTime;
+
+    if (timeElapsed > timeoutDuration) {
+        logout();
+    } else if (timeElapsed > timeoutDuration - timeoutWarning) {
+        openSessionModal();
+    }
+}
+
+/**
+ * Log out the user
+ */
+function logout() {
+    alert("You are now logged out due to inactivity.");
+    window.location.href = '/login';
+}
+
+/**
  * Open the session continuation modal
  */
 function openSessionModal() {
@@ -824,6 +807,7 @@ function closeSessionModal() {
  */
 function continueSession() {
     closeSessionModal();
+    setLastActivityTime();
     resetActivityTimeout();
 }
 
@@ -832,6 +816,7 @@ function continueSession() {
  */
 function resetActivityTimeout() {
     clearTimeout(activityTimeout);
+    setLastActivityTime();
     activityTimeout = setTimeout(() => {
         openSessionModal();
     }, timeoutDuration - timeoutWarning);
@@ -844,7 +829,16 @@ document.addEventListener('mousedown', resetActivityTimeout); // for mobile
 document.addEventListener('touchstart', resetActivityTimeout); // for mobile
 document.addEventListener('scroll', resetActivityTimeout);
 
+/**
+ * Handle visibility change event
+ */
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        checkInactivity();
+    }
+});
+
 // Initial functions
 fetchData();
-//setAvatar();
 resetActivityTimeout();
+setLastActivityTime();

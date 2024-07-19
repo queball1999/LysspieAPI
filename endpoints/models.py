@@ -60,4 +60,4 @@ class User(db.Model):
     
     @staticmethod
     def generate_api_key():
-        return 'q-' + secrets.token_hex(32)
+        return 'q-' + secrets.token_hex(64)

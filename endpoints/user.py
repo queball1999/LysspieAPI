@@ -118,32 +118,11 @@ def update_profile():
     user = User.query.filter_by(email=current_user).first()
 
     if 'display_name' in data:
-        user.display_name = data['display_name']
+        user.email = data['display_name']
     if 'password' in data and data['password']:
-        user.set_password(data['password'])
+        user.password = data['password']
     if 'api_key' in data:
         user.api_key = data['api_key']
 
     db.session.commit()
     return jsonify(msg='Profile updated')
-
-@user_bp.route('/api/upload_avatar', methods=['POST'])
-@auth_required
-def upload_avatar():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-    avatar = request.files['avatar']
-    avatar_path = os.path.join('static/avatars', f'{current_user}.png')
-    avatar.save(avatar_path)
-    user.avatar_url = avatar_path
-    db.session.commit()
-    return jsonify(avatar_url=f'/{avatar_path}')
-
-@user_bp.route('/api/get_user_avatar', methods=['GET'])
-@auth_required
-def get_user_avatar():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-    if user and user.avatar_url:
-        return jsonify(avatar_url=user.avatar_url)
-    return jsonify(avatar_url=None)

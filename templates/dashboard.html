@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LysspieAPI Dashboard</title>
+    <title>Lysspie Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -91,10 +91,6 @@
             <span class="close" onclick="closeProfile()">&times;</span>
             <h2>Profile</h2>
             <div class="profile-container">
-                <div class="avatar-section">
-                    <img id="profile-avatar" src="/static/images/default-avatar.png" alt="Avatar" class="profile-avatar">
-                    <input type="file" id="avatar-upload" accept="image/*" onchange="uploadAvatar()">
-                </div>
                 <div class="profile-details">
                     <label for="display-name">Display Name:</label>
                     <input type="text" id="display-name" value="">

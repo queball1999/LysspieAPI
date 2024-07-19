@@ -2,6 +2,7 @@ import os
 import secrets
 import bcrypt
 import jwt
+import re
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request
 from functools import wraps
@@ -18,22 +19,34 @@ def auth_required(f):
             return jsonify({"msg": "Missing Authorization Header"}), 401
 
         auth_token = auth_header.split(" ")[1]
-        
-        # Check if it's a JWT
-        try:
-            verify_jwt_in_request()
-            return f(*args, **kwargs)
-        except Exception as jwt_error:
-            # If not a valid JWT, check if it's an API key
-            users = User.query.all()
-            for user in users:
-                try:
-                    if user.api_key == auth_token:
-                        return f(*args, **kwargs)
-                except Exception as e:
-                    continue
-            return jsonify({"msg": "Invalid API key or JWT"}), 401
+
+        # Define regex patterns for JWT and API tokens
+        api_key_regex = re.compile(r"q-[a-fA-F0-9]{64}")
+        jwt_regex = re.compile(r"ey[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+")
+
+        # Check if the token matches the JWT pattern
+        if jwt_regex.match(auth_token):
+            try:
+                verify_jwt_in_request()
+                return f(*args, **kwargs)
+            except Exception as jwt_error:
+                print('JWT ERROR', jwt_error)   #convert to log
+                return render_template('login.html')
+        # Check if the token matches the API key pattern
+        elif api_key_regex.match(auth_token):
+            try:
+                user = User.query.filter_by(api_key=auth_token).first()
+                if user:
+                    return f(*args, **kwargs)
+            except Exception as e:
+                print('API ERROR', e)   #convert to log
+                return jsonify({"msg": "Invalid API key"}), 401
+        else:
+            print('INVALID AUTH TOKEN FORMAT')  #convert to log
+            return render_template('login.html')
+
     return decorated_function
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -42,7 +55,7 @@ def login():
         if not data or not data.get('email') or not data.get('password'):
             return jsonify({"msg": "Bad request"}), 400
         
-        user = User.query.filter_by(email=data['email']).first()
+        user = User.query.filter_by(email=data['email'].lower()).first()
         if user and user.verify_password(data['password']):
             access_token = create_access_token(identity=user.email)
             print(f"Generated JWT Token: {access_token}")  # Debug print
