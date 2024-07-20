@@ -11,45 +11,59 @@ from .models import *
 
 auth_bp = Blueprint('auth', __name__)
 
+NIGHTBOT_USER = os.getenv('NIGHTBOT_USER')
+NIGHTBOT_CHANNEL = os.getenv('NIGHTBOT_CHANNEL')
+
 def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
-        if not auth_header:
+        nightbot_user = request.headers.get('Nightbot-User')
+        nightbot_channel = request.headers.get('Nightbot-Channel')
+        print(request.headers)
+        if not auth_header and not (nightbot_user and nightbot_channel):
             return jsonify({"msg": "Missing Authorization Header"}), 401
 
-        auth_token = auth_header.split(" ")[1]
+        if auth_header:
+            auth_token = auth_header.split(" ")[1]
 
-        # Define regex patterns for JWT and API tokens
-        api_key_regex = re.compile(r"q-[a-fA-F0-9]{64}")
-        jwt_regex = re.compile(r"ey[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+")
+            # Define regex patterns for JWT and API tokens
+            api_key_regex = re.compile(r"q-[a-fA-F0-9]{64}")
+            jwt_regex = re.compile(r"ey[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+")
 
-        # Check if the token matches the JWT pattern
-        if jwt_regex.match(auth_token):
-            try:
-                verify_jwt_in_request()
+            # Check if the token matches the JWT pattern
+            if jwt_regex.match(auth_token):
+                try:
+                    verify_jwt_in_request()
+                    return f(*args, **kwargs)
+                except Exception as jwt_error:
+                    print('JWT ERROR', jwt_error)   #convert to log
+                    return redirect(url_for('auth.login'))
+
+            # Check if the token matches the API key pattern
+            elif api_key_regex.match(auth_token):
+                try:
+                    users = User.query.all()
+                    for user in users:
+                        try:
+                            if user.api_key == auth_token:
+                                return f(*args, **kwargs)
+                        except Exception as e:
+                            continue
+                    return redirect(url_for('auth.login'))
+                except Exception as e:
+                    print('API ERROR', e)   #convert to log
+                    return jsonify({"msg": "Invalid API key"}), 401
+
+        # Check for Nightbot authentication
+        if nightbot_user and nightbot_channel:
+            if nightbot_user == NIGHTBOT_USER and nightbot_channel == NIGHTBOT_CHANNEL:
                 return f(*args, **kwargs)
-            except Exception as jwt_error:
-                print('JWT ERROR', jwt_error)   #convert to log
-                return redirect(url_for('auth.login'))
-            
-        # Check if the token matches the API key pattern
-        elif api_key_regex.match(auth_token):
-            try:
-                users = User.query.all()
-                for user in users:
-                    try:
-                        if user.api_key == auth_token:
-                            return f(*args, **kwargs)
-                    except Exception as e:
-                        continue
-                return redirect(url_for('auth.login'))
-            except Exception as e:
-                print('API ERROR', e)   #convert to log
-                return jsonify({"msg": "Invalid API key"}), 401
-        else:
-            print('INVALID AUTH TOKEN FORMAT')  #convert to log
-            return render_template('login.html')
+            else:
+                return jsonify({"msg": "Invalid Nightbot credentials"}), 401
+
+        print('INVALID AUTH TOKEN FORMAT')  #convert to log
+        return redirect(url_for('auth.login'))
 
     return decorated_function
 

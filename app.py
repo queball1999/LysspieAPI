@@ -17,6 +17,7 @@ from endpoints import *
 # FIXME:
 #       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
 #       - Add personal branding to the bottom of the site. Want to include version, date edited, quynnbell.com, "ask for help" gitea and github link.
+#       - uwsgi struggles with SSE events, need to solve
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -32,9 +33,11 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() in ['true', '1', 't']
 DATABASE_TYPE = os.getenv('DATABASE', 'POSTGRES').upper()
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = None
-SECRET_KEY = os.getenv('SECRET_KEY')
 APP_DEFAULT_EMAIL = os.getenv('APP_DEFAULT_EMAIL').lower()
 APP_DEFAULT_PASSWORD = os.getenv('APP_DEFAULT_PASSWORD')
+SECRET_KEY = os.getenv('SECRET_KEY')
+NIGHTBOT_USER = os.getenv('NIGHTBOT_USER')
+NIGHTBOT_CHANNEL = os.getenv('NIGHTBOT_CHANNEL')
 
 # Initialize JWT
 jwt = JWTManager(app)
@@ -86,7 +89,7 @@ if __name__ == '__main__':
     host = socket.gethostname()
     IP = socket.gethostbyname(host)
     try:
-        socketio.run(app, host=IP, port=5000, debug=DEBUG)
+        socketio.run(app, host=IP, port=5100, debug=DEBUG)
     except Exception as e:
         log.error(f"Failed to start the Flask server: {e}")
         print(f"Failed to start the Flask server: {e}")

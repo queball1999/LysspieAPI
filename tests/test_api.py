@@ -1,7 +1,7 @@
 import requests
 import time
 
-BASE_URL = "http://192.168.4.41:5000/api"  # Change this if your Flask app is running on a different address
+BASE_URL = "https://api.alyssapomerleau.com/api"  # Change this if your Flask app is running on a different address
 API_KEY = 'q-3a41d2582e597161798c34346a2214d62bdb95cbc8d4735b80a351f985d0d621'  # Replace with your actual API key
 #JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyMDk5NzUxMywianRpIjoiM2QyODM5ZDMtZTc0NS00ZWQ1LWFhYzMtMTUxNGFjNzhiYWIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluQGV4YW1wbGUuY29tIiwibmJmIjoxNzIwOTk3NTEzLCJjc3JmIjoiMGZhYThlZjktMDgzNS00NDAwLThhNDAtYzVmNzI4ZmE1NGQwIiwiZXhwIjoxNzIxMDAxMTEzfQ.GjBnEix7eRS4Wfbqq5tm7dIZu4oUSC1bl2laP41KEEw'  # Replace with your actual JWT token
 

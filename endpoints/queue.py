@@ -56,14 +56,17 @@ def manage_queue():
         else:
             return f"{username} is not in the queue!", 200
     elif action == "skip":
-        user = Queue.query.order_by(Queue.id).first()
-        if user:
-            db.session.delete(user)
+        user = Queue.query.filter_by(username=username).first()
+        if not user:
+            return f"{username} is not in the queue!", 200
+
+        if user.highlighted:
+            user.highlighted = False
             db.session.commit()
             socketio.emit('update', {'message': 'Queue updated!'})
-            return f"{user.username} has skipped this round and will go next.", 200
+            return f"{username} has been skipped this round.", 200
         else:
-            return "The queue is empty.", 200
+            return f"{username} is not selected.", 200
     elif action == "position":
         users = Queue.query.order_by(Queue.id).all()
         position = next((i for i, u in enumerate(users, start=1) if u.username == username), None)
