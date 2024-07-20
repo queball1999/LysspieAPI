@@ -73,6 +73,23 @@
                 login();
             }
         });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+            console.log(` Login loaded ${preferredTheme}`)
+            changeTheme(preferredTheme);
+        });
+
+        function changeTheme(theme) {
+            const body = document.body;
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                document.querySelectorAll('.login-container').forEach(item => item.classList.add('dark-mode'));
+            } else {
+                body.classList.remove('dark-mode');
+                document.querySelectorAll('.login-container').forEach(item => item.classList.remove('dark-mode'));
+            }
+        }
     </script>
 </body>
 </html>

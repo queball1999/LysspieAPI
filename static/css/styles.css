@@ -321,6 +321,20 @@ body {
     flex-direction: column;
 }
 
+.modal-buttons {
+    width: 100%;
+}
+
+.modal-buttons button{
+    width: auto;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
 .settings-container {
     display: flex;
     flex-grow: 1;
@@ -429,6 +443,11 @@ body {
 }
 
 /* Dark mode */
+.login-container.dark-mode {
+    background-color: #202020;
+    color: white;
+}
+
 body.dark-mode {
     background-color: pink;
     color: white;
@@ -436,10 +455,6 @@ body.dark-mode {
 
 .header.dark-mode {
     background-color: pink;
-}
-
-.avatar.dark-mode {
-    background-color: #555;
 }
 
 .column.dark-mode {
@@ -452,7 +467,6 @@ body.dark-mode {
     color: white;
 }
 
-.list.dark-mode,
 .draggable.dark-mode {
     background-color: #363636;
     color: white;
@@ -480,6 +494,7 @@ body.dark-mode {
 }
 
 /* Apply primary color */
+/*
 body.custom-primary {
     --primary-color: #f0f0f0;
 }
@@ -503,7 +518,7 @@ body.custom-primary {
 .list.custom-primary .draggable {
     background-color: var(--primary-color);
 }
-
+*/
 /* Media Queries for mobile handling */
 @media (max-width: 768px) {
     .header {

@@ -154,6 +154,10 @@ function fetchData() {
             livesList.appendChild(li);
         });
         addDragAndDropListeners('lives-list');
+
+        // Apply the current theme to the newly added items
+        const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+        changeTheme(preferredTheme);
     });
 }
 
@@ -875,6 +879,9 @@ function logout() {
  * Open the session continuation modal
  */
 function openSessionModal() {
+    closeRemoveUserModal()
+    closeClearLivesModal()
+    closeClearQueueModal()
     document.getElementById('session-modal').style.display = 'block';
 
     // Start another timer to log out the user if no action is taken
@@ -920,10 +927,9 @@ function changeTheme(theme) {
     if (theme === 'dark') {
         document.body.classList.add('dark-mode');
         document.querySelector('.header').classList.add('dark-mode');
-        //document.querySelector('.avatar').classList.add('dark-mode');
         document.querySelectorAll('.column').forEach(col => col.classList.add('dark-mode'));
         document.querySelectorAll('.modal-content').forEach(modal => modal.classList.add('dark-mode'));
-        document.querySelectorAll('.list .draggable').forEach(item => item.classList.add('dark-mode'));
+        document.querySelectorAll('.draggable').forEach(item => item.classList.add('dark-mode'));
         document.querySelectorAll('.header-button').forEach(item => item.classList.add('dark-mode'));
         document.querySelectorAll('.theme-button').forEach(item => item.classList.add('dark-mode'));
         document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.add('dark-mode'));
@@ -933,10 +939,9 @@ function changeTheme(theme) {
     } else {
         body.classList.remove('dark-mode');
         document.querySelector('.header').classList.remove('dark-mode');
-        //document.querySelector('.avatar').classList.remove('dark-mode');
         document.querySelectorAll('.column').forEach(col => col.classList.remove('dark-mode'));
         document.querySelectorAll('.modal-content').forEach(modal => modal.classList.remove('dark-mode'));
-        document.querySelectorAll('.list .draggable').forEach(item => item.classList.remove('dark-mode'));
+        document.querySelectorAll('.draggable').forEach(item => item.classList.remove('dark-mode'));
         document.querySelectorAll('.header-button').forEach(item => item.classList.remove('dark-mode'));
         document.querySelectorAll('.theme-button').forEach(item => item.classList.remove('dark-mode'));
         document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.remove('dark-mode'));
@@ -944,6 +949,7 @@ function changeTheme(theme) {
         themeIcon.src = '/static/images/moon.svg';
         githubIcon.src = '/static/images/github-dark.svg';
     }
+    savePreferredTheme(theme)
 }
 
 function toggleTheme() {

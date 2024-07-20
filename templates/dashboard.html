@@ -133,14 +133,15 @@
     </div>
 
 
-
     <!-- Session Continuation Modal -->
     <div id="session-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeSessionModal()">&times;</span>
             <p>Your session is about to expire. Do you want to continue your session?</p>
-            <button onclick="continueSession()">Yes</button>
-            <button onclick="logout()">No</button>
+            <div class="modal-buttons">
+                <button onclick="continueSession()">Yes</button>
+                <button onclick="logout()">No</button>
+            </div>
         </div>
     </div>
 
@@ -149,8 +150,10 @@
         <div class="modal-content">
             <span class="close" onclick="closeClearQueueModal()">&times;</span>
             <p>Are you sure you want to clear the queue? This action cannot be undone.</p>
-            <button onclick="clearQueue()">Yes, Clear Queue</button>
-            <button onclick="closeClearQueueModal()">Cancel</button>
+            <div class="modal-buttons">
+                <button onclick="clearQueue()">Yes, Clear Queue</button>
+                <button onclick="closeClearQueueModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -159,8 +162,10 @@
         <div class="modal-content">
             <span class="close" onclick="closeClearLivesModal()">&times;</span>
             <p>Are you sure you want to clear selected users from the lives list? This action cannot be undone.</p>
-            <button onclick="bulkClearLives()">Yes, Clear Lives</button>
-            <button onclick="closeClearLivesModal()">Cancel</button>
+            <div class="modal-buttons">
+                <button onclick="bulkClearLives()">Yes, Clear Lives</button>
+                <button onclick="closeClearLivesModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -170,8 +175,10 @@
             <span class="close" onclick="closeRemoveUserModal()">&times;</span>
             <p id="remove-user-message"></p>
             <input type="hidden" id="remove-user-username">
-            <button onclick="removeUser()">Yes</button>
-            <button onclick="closeRemoveUserModal()">No</button>
+            <div class="modal-buttons">
+                <button onclick="removeUser()">Yes</button>
+                <button onclick="closeRemoveUserModal()">No</button>
+            </div>
         </div>
     </div>
 

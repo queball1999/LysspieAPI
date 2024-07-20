@@ -37,7 +37,6 @@ def manage_queue():
 
     if action == "join":
         try:
-            print('JOIN QUEUE')
             next_position = Queue.get_next_position()
             new_user = Queue(username=username, position=next_position)
             db.session.add(new_user)
