@@ -68,10 +68,9 @@ def manage_queue():
         else:
             return f"{username} is not selected.", 200
     elif action == "position":
-        users = Queue.query.order_by(Queue.id).all()
-        position = next((i for i, u in enumerate(users, start=1) if u.username == username), None)
-        if position:
-            return f"{username}, your position in the queue is {position}.", 200
+        user = Queue.query.filter_by(username=username).first()
+        if user:
+            return f"{username}, your position in the queue is {user.position}.", 200
         else:
             return f"{username} is not in the queue!", 200
     else:

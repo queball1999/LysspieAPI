@@ -20,7 +20,7 @@ def auth_required(f):
         auth_header = request.headers.get('Authorization')
         nightbot_user = request.headers.get('Nightbot-User')
         nightbot_channel = request.headers.get('Nightbot-Channel')
-        print(request.headers)
+        
         if not auth_header and not (nightbot_user and nightbot_channel):
             return jsonify({"msg": "Missing Authorization Header"}), 401
 

@@ -18,6 +18,7 @@ from endpoints import *
 #       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
 #       - Add personal branding to the bottom of the site. Want to include version, date edited, quynnbell.com, "ask for help" gitea and github link.
 #       - uwsgi struggles with SSE events, need to solve
+#       - 404, handle any endpoints which do not exist.
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -65,6 +66,10 @@ app.register_blueprint(ninelives_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(auth_bp)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 # Initialize extensions
 db.init_app(app)

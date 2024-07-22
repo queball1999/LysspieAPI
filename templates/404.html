@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</head>
+<body>
+    <div class="header">
+        <a href="/dashboard" class="site-title-icon">
+            <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Home">
+        </a>
+    </div>
+
+    <div class="container">
+        <div class="error-box">
+            <h2>404 Not Found</h2>
+            <p>Sorry, the page you are looking for does not exist.</p>
+            <img src="{{ url_for('static', filename='images/404_image.png') }}" alt="404 Image">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+            changeTheme(preferredTheme);
+        });
+
+        function changeTheme(theme) {
+            const body = document.body;
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                document.querySelectorAll('.error-box').forEach(item => item.classList.add('dark-mode'));
+            } else {
+                body.classList.remove('dark-mode');
+                document.querySelectorAll('.error-box').forEach(item => item.classList.remove('dark-mode'));
+            }
+        }
+    </script>
+</body>
+</html>

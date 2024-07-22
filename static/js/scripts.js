@@ -121,6 +121,10 @@ function fetchData() {
             queueList.appendChild(li);
         });
         addDragAndDropListeners('queue-list');
+
+        // Apply the current theme to the newly added items
+        const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+        changeTheme(preferredTheme);
     });
 
     // Fetch lives order
@@ -934,6 +938,7 @@ function changeTheme(theme) {
         document.querySelectorAll('.theme-button').forEach(item => item.classList.add('dark-mode'));
         document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.add('dark-mode'));
         document.querySelectorAll('.settings-menu').forEach(item => item.classList.add('dark-mode'));
+        document.querySelectorAll('.error-box').forEach(item => item.classList.add('dark-mode'));
         themeIcon.src = '/static/images/sun.svg';
         githubIcon.src = '/static/images/github-light.svg';
     } else {
@@ -946,6 +951,7 @@ function changeTheme(theme) {
         document.querySelectorAll('.theme-button').forEach(item => item.classList.remove('dark-mode'));
         document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.remove('dark-mode'));
         document.querySelectorAll('.settings-menu').forEach(item => item.classList.remove('dark-mode'));
+        document.querySelectorAll('.error-box').forEach(item => item.classList.remove('dark-mode'));
         themeIcon.src = '/static/images/moon.svg';
         githubIcon.src = '/static/images/github-dark.svg';
     }
