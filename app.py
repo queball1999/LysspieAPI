@@ -15,10 +15,7 @@ from flask_jwt_extended import JWTManager
 from endpoints import *
 
 # FIXME:
-#       - Skip endoint allows user to remove themself from the spin selection. essentially removes highlight.
-#       - Add personal branding to the bottom of the site. Want to include version, date edited, quynnbell.com, "ask for help" gitea and github link.
 #       - uwsgi struggles with SSE events, need to solve
-#       - 404, handle any endpoints which do not exist.
 
 # Initialize Flask app
 app = Flask(__name__)
