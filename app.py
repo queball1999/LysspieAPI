@@ -31,7 +31,7 @@ PRODUCTION = os.getenv('PRODUCTION', 'False').lower() in ['true', '1', 't']
 DATABASE_TYPE = os.getenv('DATABASE', 'POSTGRES').upper()
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = None
-APP_DEFAULT_EMAIL = os.getenv('APP_DEFAULT_EMAIL').lower()
+APP_DEFAULT_username = os.getenv('APP_DEFAULT_USERNAME').lower()
 APP_DEFAULT_PASSWORD = os.getenv('APP_DEFAULT_PASSWORD')
 SECRET_KEY = os.getenv('SECRET_KEY')
 NIGHTBOT_USER = os.getenv('NIGHTBOT_USER')
@@ -76,9 +76,9 @@ bcrypt.init_app(app)
 with app.app_context():
     try:
         db.create_all()
-        if not User.query.filter_by(email=APP_DEFAULT_EMAIL).first():
+        if not User.query.filter_by(username=APP_DEFAULT_username).first():
             api_key = User.generate_api_key()
-            default_user = User(email=APP_DEFAULT_EMAIL, password=APP_DEFAULT_PASSWORD, api_key=api_key, role='admin')
+            default_user = User(username=APP_DEFAULT_username, password=APP_DEFAULT_PASSWORD, api_key=api_key, role='admin')
             db.session.add(default_user)
             db.session.commit()
     except Exception as e:

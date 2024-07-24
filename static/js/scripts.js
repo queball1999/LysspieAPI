@@ -5,6 +5,8 @@ let intervalId;
 let timeoutDuration = parseInt(localStorage.getItem('jwt_expiration')) || 900000; // Default to 15 minutes
 let timeoutWarning = 60000; // Set to 1 minute timeout
 let activityTimeout;
+let lightPrimaryColor, lightSecondaryColor, lightTertiaryColor, lightButtonColor;
+let darkPrimaryColor, darkSecondaryColor, darkTertiaryColor, darkButtonColor;
 
 // Initialize socket connection
 const socket = io();
@@ -85,8 +87,7 @@ function saveSelectedLivesUsers(users) {
  */
 function fetchData() {
     const token = localStorage.getItem('token');
-    const apiKey = localStorage.getItem('api_key');
-    if (!token || !apiKey) {
+    if (!token) {
         window.location.href = '/login';
         return;
     }
@@ -94,8 +95,7 @@ function fetchData() {
     // Fetch queue order
     fetch('/api/get_queue_order', {
         headers: { 
-            'Authorization': `Bearer ${token}`,
-            'X-API-KEY': apiKey
+            'Authorization': `Bearer ${token}`
         }
     })
     .then(checkAuth) // Check for unauthorized status
@@ -130,8 +130,7 @@ function fetchData() {
     // Fetch lives order
     fetch('/api/get_lives_order', {
         headers: { 
-            'Authorization': `Bearer ${token}`,
-            'X-API-KEY': apiKey
+            'Authorization': `Bearer ${token}`
         }
     })
     .then(checkAuth) // Check for unauthorized status
@@ -572,7 +571,7 @@ function toggleSelectLivesUser(checkbox) {
 
     const token = localStorage.getItem('token');
     const apiKey = localStorage.getItem('api_key');
-    if (!token || !apiKey) {
+    if (!token) {
         window.location.href = '/login';
         return;
     }
@@ -581,8 +580,7 @@ function toggleSelectLivesUser(checkbox) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'X-API-KEY': apiKey
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ highlighted_users: selectedLivesUsers })
     })
@@ -639,7 +637,7 @@ function toggleSelectAllLives(checkbox) {
 
     const token = localStorage.getItem('token');
     const apiKey = localStorage.getItem('api_key');
-    if (!token || !apiKey) {
+    if (!token) {
         window.location.href = '/login';
         return;
     }
@@ -649,8 +647,7 @@ function toggleSelectAllLives(checkbox) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'X-API-KEY': apiKey
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ highlighted_users: selectedLivesUsers })
     })
@@ -725,8 +722,8 @@ function showAbout() {
 function openProfile() {
     document.getElementById('profile-modal').style.display = 'block';
     const token = localStorage.getItem('token');
-    const email = atob(token.split('.')[1]);
-    const username = JSON.parse(email).sub;
+    const username_raw = atob(token.split('.')[1]);
+    const username = JSON.parse(username_raw).sub;
     document.getElementById('display-name').value = username;
     
     // Fetch and set API key from server
@@ -779,6 +776,7 @@ function resetApiKey() {
  * Save the profile information
  */
 function saveProfile() {
+    const token = localStorage.getItem('token');
     const displayName = document.getElementById('display-name').value;
     const password = document.getElementById('password').value;
     const apiKey = document.getElementById('api-key').value;
@@ -923,41 +921,168 @@ function resetActivityTimeout() {
     }, timeoutDuration - timeoutWarning);
 }
 
+/* Theme Handling */
+function updateLightPrimaryColor(color) {
+    document.documentElement.style.setProperty('--light-primary-color', color);
+    lightPrimaryColor = color;
+}
+
+function updateLightSecondaryColor(color) {
+    document.documentElement.style.setProperty('--light-secondary-color', color);
+    lightSecondaryColor = color;
+}
+
+function updateLightBackgroundColor(color) {
+    document.documentElement.style.setProperty('--light-background-color', color);
+    lightTertiaryColor = color;
+}
+
+function updateLightButtonColor(color) {
+    document.documentElement.style.setProperty('--light-button-color', color);
+    lightButtonColor = color;
+}
+
+function updateDarkPrimaryColor(color) {
+    document.documentElement.style.setProperty('--dark-primary-color', color);
+    darkPrimaryColor = color;
+}
+
+function updateDarkSecondaryColor(color) {
+    document.documentElement.style.setProperty('--dark-secondary-color', color);
+    darkSecondaryColor = color;
+}
+
+function updateDarkBackgroundColor(color) {
+    document.documentElement.style.setProperty('--dark-background-color', color);
+    darkTertiaryColor = color;
+}
+
+function updateDarkButtonColor(color) {
+    document.documentElement.style.setProperty('--dark-button-color', color);
+    darkButtonColor = color;
+}
+
+function saveColorSettings() {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const colors = {
+        light_primary_color: lightPrimaryColor,
+        light_secondary_color: lightSecondaryColor,
+        light_tertiary_color: lightTertiaryColor,
+        light_button_color: lightButtonColor,
+        dark_primary_color: darkPrimaryColor,
+        dark_secondary_color: darkSecondaryColor,
+        dark_tertiary_color: darkTertiaryColor,
+        dark_button_color: darkButtonColor
+    };
+
+    fetch('/api/update_profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(colors)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(colors);
+        console.log('Color settings saved successfully');
+    });
+}
+
 function changeTheme(theme) {
-    const body = document.body;
+    document.body.className = theme + '-mode';
+    localStorage.setItem('preferredTheme', theme);
+    loadThemeColors(theme);
+}
+
+function loadThemeColors(theme) {
+    const token = localStorage.getItem('token');
     const themeIcon = document.getElementById('theme-icon');
     const githubIcon = document.getElementById('github-icon');
 
-    if (theme === 'dark') {
-        document.body.classList.add('dark-mode');
-        document.querySelector('.header').classList.add('dark-mode');
-        document.querySelectorAll('.column').forEach(col => col.classList.add('dark-mode'));
-        document.querySelectorAll('.modal-content').forEach(modal => modal.classList.add('dark-mode'));
-        document.querySelectorAll('.draggable').forEach(item => item.classList.add('dark-mode'));
-        document.querySelectorAll('.header-button').forEach(item => item.classList.add('dark-mode'));
-        document.querySelectorAll('.theme-button').forEach(item => item.classList.add('dark-mode'));
-        document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.add('dark-mode'));
-        document.querySelectorAll('.settings-menu').forEach(item => item.classList.add('dark-mode'));
-        document.querySelectorAll('.error-box').forEach(item => item.classList.add('dark-mode'));
-        themeIcon.src = '/static/images/sun.svg';
-        githubIcon.src = '/static/images/github-light.svg';
-    } else {
-        body.classList.remove('dark-mode');
-        document.querySelector('.header').classList.remove('dark-mode');
-        document.querySelectorAll('.column').forEach(col => col.classList.remove('dark-mode'));
-        document.querySelectorAll('.modal-content').forEach(modal => modal.classList.remove('dark-mode'));
-        document.querySelectorAll('.draggable').forEach(item => item.classList.remove('dark-mode'));
-        document.querySelectorAll('.header-button').forEach(item => item.classList.remove('dark-mode'));
-        document.querySelectorAll('.theme-button').forEach(item => item.classList.remove('dark-mode'));
-        document.querySelectorAll('.toggle-view-btn').forEach(item => item.classList.remove('dark-mode'));
-        document.querySelectorAll('.settings-menu').forEach(item => item.classList.remove('dark-mode'));
-        document.querySelectorAll('.error-box').forEach(item => item.classList.remove('dark-mode'));
-        themeIcon.src = '/static/images/moon.svg';
-        githubIcon.src = '/static/images/github-dark.svg';
+    if (!token) {
+        window.location.href = '/login';
+        return;
     }
-    savePreferredTheme(theme)
+
+    fetch('/api/user', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (theme === 'light') {
+            if (data.light_background_color) {
+                document.documentElement.style.setProperty('--light-background-color', data.light_background_color);
+                document.getElementById('light-background-color').value = data.light_background_color;
+                document.getElementById('dark-background-color').value = data.dark_background_color;
+            }
+            if (data.light_primary_color) {
+                document.documentElement.style.setProperty('--light-primary-color', data.light_primary_color);
+                document.getElementById('light-primary-color').value = data.light_primary_color;
+                document.getElementById('dark-primary-color').value = data.dark_primary_color;
+            }
+            if (data.light_secondary_color) {
+                document.documentElement.style.setProperty('--light-secondary-color', data.light_secondary_color);
+                document.getElementById('light-secondary-color').value = data.light_secondary_color;
+                document.getElementById('dark-secondary-color').value = data.dark_secondary_color;
+            }
+            if (data.light_button_color) {
+                document.documentElement.style.setProperty('--light-button-color', data.light_button_color);
+                document.getElementById('light-button-color').value = data.light_button_color;
+                document.getElementById('dark-button-color').value = data.dark_button_color;
+            }
+            if (data.light_text_color) {
+                document.documentElement.style.setProperty('--light-text-color', data.light_text_color);
+                document.getElementById('light-text-color').value = data.light_text_color;
+                document.getElementById('dark-text-color').value = data.dark_text_color;
+            }
+            themeIcon.src = '/static/images/moon.svg';
+            githubIcon.src = '/static/images/github-dark.svg';
+        } else {
+            if (data.dark_background_color) {
+                document.documentElement.style.setProperty('--dark-background-color', data.dark_background_color);
+                document.getElementById('light-background-color').value = data.light_background_color;
+                document.getElementById('dark-background-color').value = data.dark_background_color;
+            }
+            if (data.dark_primary_color) {
+                document.documentElement.style.setProperty('--dark-primary-color', data.dark_primary_color);
+                document.getElementById('light-primary-color').value = data.light_primary_color;
+                document.getElementById('dark-primary-color').value = data.dark_primary_color;
+            }
+            if (data.dark_secondary_color) {
+                document.documentElement.style.setProperty('--dark-secondary-color', data.dark_secondary_color);
+                document.getElementById('light-secondary-color').value = data.light_secondary_color;
+                document.getElementById('dark-secondary-color').value = data.dark_secondary_color;
+            }
+            if (data.dark_button_color) {
+                document.documentElement.style.setProperty('--dark-button-color', data.dark_button_color);
+                document.getElementById('light-button-color').value = data.light_button_color;
+                document.getElementById('dark-button-color').value = data.dark_button_color;
+            }
+            if (data.dark_text_color) {
+                document.documentElement.style.setProperty('--dark-text-color', data.dark_text_color);
+                document.getElementById('light-text-color').value = data.light_text_color;
+                document.getElementById('dark-text-color').value = data.dark_text_color;
+            }
+            themeIcon.src = '/static/images/sun.svg';
+            githubIcon.src = '/static/images/github-light.svg';
+        }
+        savePreferredTheme(theme)
+    });
 }
 
+/* Function to toggle theme */
 function toggleTheme() {
     const body = document.body;
     if (body.classList.contains('dark-mode')) {
@@ -966,17 +1091,6 @@ function toggleTheme() {
         changeTheme('dark');
     }
 }
-
-function changePrimaryColor(color) {
-    document.documentElement.style.setProperty('--primary-color', color);
-    document.body.classList.add('custom-primary');
-    document.querySelector('.header').classList.add('custom-primary');
-    document.querySelector('.avatar').classList.add('custom-primary');
-    document.querySelectorAll('.column').forEach(col => col.classList.add('custom-primary'));
-    document.querySelectorAll('.modal-content').forEach(modal => modal.classList.add('custom-primary'));
-    document.querySelectorAll('.list .draggable').forEach(item => item.classList.add('custom-primary'));
-}
-
 
 // Event listeners to reset activity timeout on various user actions
 document.addEventListener('mousemove', resetActivityTimeout);

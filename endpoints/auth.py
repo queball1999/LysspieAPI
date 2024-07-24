@@ -37,7 +37,7 @@ def auth_required(f):
                     verify_jwt_in_request()
                     return f(*args, **kwargs)
                 except Exception as jwt_error:
-                    print('JWT ERROR', jwt_error)   #convert to log
+                    print('JWT ERROR', jwt_error, auth_token)   #convert to log
                     return redirect(url_for('auth.login'))
 
             # Check if the token matches the API key pattern
@@ -67,17 +67,16 @@ def auth_required(f):
 
     return decorated_function
 
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         data = request.json
-        if not data or not data.get('email') or not data.get('password'):
+        if not data or not data.get('username') or not data.get('password'):
             return jsonify({"msg": "Bad request"}), 400
         
-        user = User.query.filter_by(email=data['email'].lower()).first()
+        user = User.query.filter_by(username=data['username'].lower()).first()
         if user and user.verify_password(data['password']):
-            access_token = create_access_token(identity=user.email)
+            access_token = create_access_token(identity=user.username)
             print(f"Generated JWT Token: {access_token}")  # Debug print
             return jsonify(access_token=access_token, api_key=user.api_key), 200
         return jsonify({"msg": "Invalid credentials"}), 401
@@ -87,11 +86,11 @@ def login():
 @jwt_required()
 def register():
     data = request.json
-    email = data['email']
+    username = data['username']
     password = data['password']
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     api_key = User.generate_api_key()
-    new_user = User(email=email, password=hashed_password, api_key=api_key)
+    new_user = User(username=username, password=hashed_password, api_key=api_key)
     db.session.add(new_user)
     db.session.commit()
     return jsonify(message="User registered"), 201
@@ -101,7 +100,7 @@ def register():
 def change_password():
     current_user = get_jwt_identity()
     data = request.json
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
     if user:
         new_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         user.password = new_password
@@ -113,7 +112,7 @@ def change_password():
 @jwt_required()
 def reset_password():
     current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
     new_password = secrets.token_hex(8)
     user.password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     db.session.commit()

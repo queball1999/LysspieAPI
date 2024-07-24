@@ -78,7 +78,6 @@
                 <div class="settings-content">
                     <div id="general-settings" class="settings-section">
                         <h3>General Settings</h3>
-                        <!-- Add general settings content here -->
                         <h4>Theming</h4>
                         <label for="theme-select">Select Theme:</label>
                         <select id="theme-select" onchange="changeTheme(this.value)">
@@ -86,8 +85,45 @@
                             <option value="dark">Dark Mode</option>
                         </select>
                         <br>
-                        <label for="primary-color">Primary Color:</label>
-                        <input type="color" id="primary-color" name="primary-color" value="#f0f0f0" onchange="changePrimaryColor(this.value)">
+                        <div class="color-selection">
+                            <div class="color-section">
+                                <h4>Light Mode Colors</h4>
+                                <label for="light-background-color">Background Color:</label>
+                                <input type="color" id="light-background-color" name="light-background-color" value="#FFC0CB" onchange="updateLightBackgroundColor(this.value)">
+                                <br>
+                                <label for="light-primary-color">Primary Color:</label>
+                                <input type="color" id="light-primary-color" name="light-primary-color" value="#FFFFFF" onchange="updateLightPrimaryColor(this.value)">
+                                <br>
+                                <label for="light-secondary-color">Secondary Color:</label>
+                                <input type="color" id="light-secondary-color" name="light-secondary-color" value="#E5E5E5" onchange="updateLightSecondaryColor(this.value)">
+                                <br>
+                                <label for="light-button-color">Button Color:</label>
+                                <input type="color" id="light-button-color" name="light-button-color" value="#4CAF50" onchange="updateLightButtonColor(this.value)">
+                                <br>
+                                <label for="light-text-color">Text Color:</label>
+                                <input type="color" id="light-text-color" name="light-text-color" value="#000000" onchange="updateLightTextColor(this.value)">
+                            </div>
+                            <div class="color-section">
+                                <h4>Dark Mode Colors</h4>
+                                <label for="dark-background-color">Background Color:</label>
+                                <input type="color" id="dark-background-color" name="dark-background-color" value="#202020" onchange="updateDarkBackgroundColor(this.value)">
+                                <br>
+                                <label for="dark-primary-color">Primary Color:</label>
+                                <input type="color" id="dark-primary-color" name="dark-primary-color" value="#363636" onchange="updateDarkPrimaryColor(this.value)">
+                                <br>
+                                <label for="dark-secondary-color">Secondary Color:</label>
+                                <input type="color" id="dark-secondary-color" name="dark-secondary-color" value="#505050" onchange="updateDarkSecondaryColor(this.value)">
+                                <br>
+                                <label for="dark-button-color">Button Color:</label>
+                                <input type="color" id="dark-button-color" name="dark-button-color" value="#4CAF50" onchange="updateDarkButtonColor(this.value)">
+                                <br>
+                                <label for="dark-text-color">Text Color:</label>
+                                <input type="color" id="dark-text-color" name="dark-text-color" value="#FFFFFF" onchange="updateDarkTextColor(this.value)">
+                            </div>
+                        </div>
+                        <div class="color-selection-button">
+                            <button onclick="saveColorSettings()">Save</button>
+                        </div>
                     </div>
                     <div id="user-management" class="settings-section">
                         <h3>User Management</h3>
@@ -95,8 +131,10 @@
                     </div>
                     <div id="about-section" class="settings-section">
                         <h3>About</h3>
-                        <p>Web Server: {{ web_server }}</p>
                         <p>App Version: {{ app_version }}</p>
+                        <p>Web Server: {{ web_server }}</p>
+                        <p>Operating System: {{ os }}</p>
+                        <p>Python Version: {{ python_version }}</p>
                         <br></br>
                         <p>This website was made with love by <a href="https://github.com/queball1999" target="_blank">Queball1999</a> <3</p>
                         <p>Check out Lysspie on <a href="https://www.twitch.tv/lysspie" target="_blank">twitch</a> :)</p>
@@ -105,6 +143,7 @@
             </div>
         </div>
     </div>
+
 
 
     <!-- Profile Modal -->
@@ -201,8 +240,9 @@
         }
 
         function setAvatar() {
-            const email = atob(token.split('.')[1]);
-            const username = JSON.parse(email).sub;
+            console.log(`SET AVATAR: ${token}`)
+            const username_raw = atob(token.split('.')[1]);
+            const username = JSON.parse(username_raw).sub;
             document.getElementById('avatar-text').textContent = username.slice(0, 2).toUpperCase();
         }
 

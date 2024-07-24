@@ -13,7 +13,7 @@
             <div class="lysspie-login-logo">
                 <img src="{{ url_for('static', filename='images/favicon.png') }}" alt="Lysspie">
             </div>
-            <input type="text" id="email" placeholder="Email">
+            <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
             <div class="show-password-container">
                 <input type="checkbox" id="show-password" onclick="togglePassword()"> Show Password
@@ -34,7 +34,7 @@
         }
 
         function login() {
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
             fetch('/login', {
@@ -42,7 +42,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ username, password })
             })
             .then(response => {
                 if (response.status === 200) {
@@ -62,8 +62,55 @@
             });
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+            const lightPrimaryColor = localStorage.getItem('light_primary_color') || '#FFFFFF';
+            const lightSecondaryColor = localStorage.getItem('light_secondary_color') || '#E5E5E5';
+            const lightBackgroundColor = localStorage.getItem('light_background_color') || '#FFC0CB';
+            const lightButtonColor = localStorage.getItem('light_button_color') || '#4CAF50';
+            const lightTextColor = localStorage.getItem('light_text_color') || '#000000';
+
+            const darkPrimaryColor = localStorage.getItem('dark_primary_color') || '#363636';
+            const darkSecondaryColor = localStorage.getItem('dark_secondary_color') || '#505050';
+            const darkBackgroundColor = localStorage.getItem('dark_background_color') || '#202020';
+            const darkButtonColor = localStorage.getItem('dark_button_color') || '#4CAF50';
+            const darkTextColor = localStorage.getItem('dark_text_color') || '#FFFFFF';
+
+            changeTheme(preferredTheme, {
+                lightPrimaryColor,
+                lightSecondaryColor,
+                lightBackgroundColor,
+                lightButtonColor,
+                lightTextColor,
+                darkPrimaryColor,
+                darkSecondaryColor,
+                darkBackgroundColor,
+                darkButtonColor,
+                darkTextColor
+            });
+        });
+
+        function changeTheme(theme, colors) {
+            const root = document.documentElement;
+            if (theme === 'dark') {
+                root.style.setProperty('--background-color', colors.darkBackgroundColor);
+                root.style.setProperty('--primary-color', colors.darkPrimaryColor);
+                root.style.setProperty('--secondary-color', colors.darkSecondaryColor);
+                root.style.setProperty('--button-color', colors.darkButtonColor);
+                root.style.setProperty('--text-color', colors.darkTextColor);
+                document.body.classList.add('dark-mode');
+            } else {
+                root.style.setProperty('--background-color', colors.lightBackgroundColor);
+                root.style.setProperty('--primary-color', colors.lightPrimaryColor);
+                root.style.setProperty('--secondary-color', colors.lightSecondaryColor);
+                root.style.setProperty('--button-color', colors.lightButtonColor);
+                root.style.setProperty('--text-color', colors.lightTextColor);
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
         // Submit login on Enter key press
-        document.getElementById('email').addEventListener('keypress', function(event) {
+        document.getElementById('username').addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 login();
             }
@@ -73,23 +120,6 @@
                 login();
             }
         });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
-            console.log(` Login loaded ${preferredTheme}`)
-            changeTheme(preferredTheme);
-        });
-
-        function changeTheme(theme) {
-            const body = document.body;
-            if (theme === 'dark') {
-                body.classList.add('dark-mode');
-                document.querySelectorAll('.login-container').forEach(item => item.classList.add('dark-mode'));
-            } else {
-                body.classList.remove('dark-mode');
-                document.querySelectorAll('.login-container').forEach(item => item.classList.remove('dark-mode'));
-            }
-        }
     </script>
 </body>
 </html>

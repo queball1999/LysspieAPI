@@ -1,11 +1,5 @@
-Command: !join
-$(eval r = "$(urlfetch https://example.domain/api/queue?action=join&username=$(user))"; r === "joined_queue" ? "$(user) has joined the queue!" : r === "already_in_queue" ? "$(user) is already in the queue!" : "There was an error processing your request.")
-
-Command: !leave
-$(eval r = "$(urlfetch https://example.domain/api/queue?action=leave&username=$(user))"; r === "left_queue" ? "$(user) has left the queue!" : r === "not_in_queue" ? "$(user) is not in the queue!" : "There was an error processing your request.")
-
-Command: !skip
-$(eval r = "$(urlfetch https://example.domain/api/queue?action=skip)"; r !== "queue_empty" ? r + " has skipped this round and will go next." : "The queue is empty.")
-
-Command: !position
-$(eval r = "$(urlfetch https://example.domain/api/queue?action=position&username=$(user))"; r !== "not_in_queue" ? "$(user), your position in the queue is " + r + "." : "$(user) is not in the queue!")
+!join	$(urlfetch https://api.alyssapomerleau.com/api/queue?action=join&username=$(user))	Everyone	 
+!leave	$(urlfetch https://api.alyssapomerleau.com/api/queue?action=leave&username=$(user))	Everyone	 
+!ninelives	$(urlfetch https://api.alyssapomerleau.com/api/ninelives?username=$(user))	Everyone	 
+!position	$(urlfetch https://api.alyssapomerleau.com/api/queue?action=position&username=$(user))	Everyone	 
+!skip	$(urlfetch https://api.alyssapomerleau.com/api/queue?action=skip&username=$(user))

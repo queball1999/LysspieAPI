@@ -162,3 +162,6 @@ cython_debug/
 
 # Visual Studio
 .vs/
+
+#Test Folder
+tests/

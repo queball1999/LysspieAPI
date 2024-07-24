@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, jsonify, request, redirect, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
+import os
 import secrets
+import platform
 from datetime import datetime
 from .database import db
 from .models import *
@@ -17,7 +19,9 @@ dashboard_bp = Blueprint('dashboard', __name__)
 def dashboard():
     web_server = request.environ.get('SERVER_SOFTWARE', 'Unknown Web Server')
     app_version = "1.0.0"  # Replace with your app version
-    return render_template('dashboard.html', web_server=web_server, app_version=app_version)
+    os_info = platform.system() + " " + platform.release()
+    python_version = platform.python_version()
+    return render_template('dashboard.html', web_server=web_server, app_version=app_version, os=os_info, python_version=python_version)
 
 @dashboard_bp.route('/')
 def home():

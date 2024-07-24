@@ -30,24 +30,26 @@ def validate_password(password):
         return False
     return True
 
-# Endpoint for getting api key
-@user_bp.route('/api/get_api_key', methods=['GET'])
+# Endpoint for getting user info
+@user_bp.route('/api/user', methods=['GET'])
 @auth_required
-def get_api_key():
+def get_user():
+    print('GET USER')
     current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-    return jsonify(api_key=user.api_key)
-
-# Endpoint for resetting api key
-@user_bp.route('/api/reset_api_key', methods=['POST'])
-@auth_required
-def reset_api_key():
-    current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
     if user:
-        user.api_key = User.generate_api_key()
-        db.session.commit()
-        return jsonify({'msg': 'API key reset successfully', 'api_key': user.api_key}), 200
+        return jsonify({
+            'username': user.username,
+            'api_key': user.api_key,
+            'light_primary_color': user.light_primary_color,
+            'light_secondary_color': user.light_secondary_color,
+            'light_background_color': user.light_background_color,
+            'light_button_color': user.light_button_color,
+            'dark_primary_color': user.dark_primary_color,
+            'dark_secondary_color': user.dark_secondary_color,
+            'dark_background_color': user.dark_background_color,
+            'dark_button_color': user.dark_button_color
+        }), 200
     return "User not found", 404
 
 # Endpoint for adding new user
@@ -72,7 +74,7 @@ def create_user():
 def delete_user(username):
     if not validate_username(username):
         return "Invalid username format", 400
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
     if user:
         db.session.delete(user)
         db.session.commit()
@@ -89,7 +91,7 @@ def update_user(username):
     new_password = data.get('password')
     if new_password and not validate_password(new_password):
         return "Invalid password format", 400
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
     if user:
         if new_password:
             user.password = generate_password_hash(new_password)
@@ -97,32 +99,57 @@ def update_user(username):
         return jsonify({'msg': 'User updated successfully'}), 200
     return "User not found", 404
 
-# Endpoint for getting user info
-@user_bp.route('/api/user', methods=['GET'])
+# Endpoint for getting api key
+@user_bp.route('/api/get_api_key', methods=['GET'])
 @auth_required
-def get_user():
+def get_api_key():
     current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
+    user = User.query.filter_by(username=current_user).first()
+    return jsonify(api_key=user.api_key)
+
+# Endpoint for resetting api key
+@user_bp.route('/api/reset_api_key', methods=['POST'])
+@auth_required
+def reset_api_key():
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user).first()
     if user:
-        return jsonify({
-            'username': user.username,
-            'api_key': user.api_key
-        }), 200
+        user.api_key = User.generate_api_key()
+        db.session.commit()
+        return jsonify({'msg': 'API key reset successfully', 'api_key': user.api_key}), 200
     return "User not found", 404
 
+# Endpoint for updating user profile
 @user_bp.route('/api/update_profile', methods=['POST'])
 @auth_required
 def update_profile():
     data = request.json
     current_user = get_jwt_identity()
-    user = User.query.filter_by(email=current_user).first()
-
+    user = User.query.filter_by(username=current_user).first()
+    
     if 'display_name' in data:
-        user.email = data['display_name']
-    if 'password' in data and data['password']:
-        user.password = data['password']
+        user.username = data['display_name']
+    #if 'password' in data and data['password']:
+        #user.password = data['password']
     if 'api_key' in data:
         user.api_key = data['api_key']
-
+    if 'light_primary_color' in data:
+        user.light_primary_color = data['light_primary_color']
+    if 'light_secondary_color' in data:
+        user.light_secondary_color = data['light_secondary_color']
+    if 'light_background_color' in data:
+        user.light_background_color = data['light_background_color']
+    if 'light_button_color' in data:
+        user.light_button_color = data['light_button_color']
+    if 'dark_primary_color' in data:
+        user.dark_primary_color = data['dark_primary_color']
+    if 'dark_secondary_color' in data:
+        user.dark_secondary_color = data['dark_secondary_color']
+    if 'dark_background_color' in data:
+        user.dark_background_color = data['dark_background_color']
+    if 'dark_button_color' in data:
+        user.dark_button_color = data['dark_button_color']
+    print('SAVING USER: ', user)
+    
     db.session.commit()
     return jsonify(msg='Profile updated')
