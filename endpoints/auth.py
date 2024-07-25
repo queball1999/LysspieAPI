@@ -50,7 +50,7 @@ def auth_required(f):
                                 return f(*args, **kwargs)
                         except Exception as e:
                             continue
-                    return redirect(url_for('auth.login'))
+                    return jsonify({"msg": "Invalid API key"}), 401
                 except Exception as e:
                     print('API ERROR', e)   #convert to log
                     return jsonify({"msg": "Invalid API key"}), 401
