@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 Not Found</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </head>
 <body>
     <div class="header">
@@ -27,17 +27,6 @@
             const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
             changeTheme(preferredTheme);
         });
-
-        function changeTheme(theme) {
-            const body = document.body;
-            if (theme === 'dark') {
-                body.classList.add('dark-mode');
-                document.querySelectorAll('.error-box').forEach(item => item.classList.add('dark-mode'));
-            } else {
-                body.classList.remove('dark-mode');
-                document.querySelectorAll('.error-box').forEach(item => item.classList.remove('dark-mode'));
-            }
-        }
     </script>
 </body>
 </html>

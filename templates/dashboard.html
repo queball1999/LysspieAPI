@@ -71,9 +71,9 @@
             <span class="close" onclick="closeSettings()">&times;</span>
             <div class="settings-container">
                 <div class="settings-menu">
-                    <a href="#" onclick="showGeneralSettings()">General</a>
-                    <a href="#" onclick="showUserManagement()">User Management</a>
-                    <a href="#" onclick="showAbout()">About</a>
+                    <a href="#" data-section="general-settings" onclick="showGeneralSettings()">General</a>
+                    <a href="#" data-section="user-management" onclick="showUserManagement()">User Management</a>
+                    <a href="#" data-section="about-section" onclick="showAbout()">About</a>
                 </div>
                 <div class="settings-content">
                     <div id="general-settings" class="settings-section">
@@ -220,33 +220,13 @@
             </div>
         </div>
     </div>
-
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
-    <script>
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/login';
-        }
-
-        function toggleDropdown() {
-            const dropdownMenu = document.getElementById('dropdown-menu');
-            dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('api_key');
-            window.location.href = '/login';
-        }
-
-        function setAvatar() {
-            console.log(`SET AVATAR: ${token}`)
-            const username_raw = atob(token.split('.')[1]);
-            const username = JSON.parse(username_raw).sub;
-            document.getElementById('avatar-text').textContent = username.slice(0, 2).toUpperCase();
-        }
-
-        setAvatar();
-    </script>
+    
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/modals.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fetchData.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lives.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/queue.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

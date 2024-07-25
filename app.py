@@ -16,6 +16,8 @@ from endpoints import *
 
 # FIXME:
 #       - uwsgi struggles with SSE events, need to solve
+#       - settings modal needs to collapse on mobile.
+#       - need to add lazy loading animation. also refresh button needs animation.
 
 # Initialize Flask app
 app = Flask(__name__)
