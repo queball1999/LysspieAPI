@@ -20,7 +20,6 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    overflow: hidden;
 }
 
 /* Light mode */
@@ -571,7 +570,7 @@ body.dark-mode {
     animation: spin 1s linear infinite;
 }
 
-/* Media Queries for mobile handling */
+/* Mobile specific styles */
 @media (max-width: 768px) {
     .header {
         justify-content: space-between;
@@ -600,6 +599,24 @@ body.dark-mode {
     .login-container,
     .modal-content {
         width: 90%;
+    }
+
+    .settings-container {
+        flex-direction: column;
+    }
+
+    .settings-menu {
+        width: 100%;
+        border-bottom: 1px solid var(--secondary-color);
+    }
+
+    .settings-content {
+        width: 100%;
+        display: none;
+    }
+
+    .settings-section.active {
+        display: block;
     }
 
     .modal-content {

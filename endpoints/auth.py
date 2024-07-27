@@ -53,7 +53,7 @@ def auth_required(f):
                     return jsonify({"msg": "Invalid API key"}), 401
                 except Exception as e:
                     print('API ERROR', e)   #convert to log
-                    return jsonify({"msg": "Invalid API key"}), 401
+                    return jsonify({"msg": "Something went wronf processing API key"}), 500
 
         # Check for Nightbot authentication
         if nightbot_user and nightbot_channel:
