@@ -8,5 +8,4 @@ SQLAlchemy
 python-dotenv
 cryptography
 psycopg2
-gevent
-gevent-websocket
+flask_limiter

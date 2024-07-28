@@ -8,6 +8,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from functools import wraps
 from .database import db
 from .models import *
+from .rate_limit import *
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -37,7 +38,7 @@ def auth_required(f):
                     verify_jwt_in_request()
                     return f(*args, **kwargs)
                 except Exception as jwt_error:
-                    print('JWT ERROR', jwt_error, auth_token)   #convert to log
+                    #error_log.error('JWT ERROR', jwt_error, auth_token)   #convert to log
                     return redirect(url_for('auth.login'))
 
             # Check if the token matches the API key pattern
@@ -52,8 +53,8 @@ def auth_required(f):
                             continue
                     return jsonify({"msg": "Invalid API key"}), 401
                 except Exception as e:
-                    print('API ERROR', e)   #convert to log
-                    return jsonify({"msg": "Something went wronf processing API key"}), 500
+                    #error_log.error(f'API ERROR: {e}')
+                    return jsonify({"msg": "Something went wrong processing API key"}), 500
 
         # Check for Nightbot authentication
         if nightbot_user and nightbot_channel:
@@ -62,23 +63,30 @@ def auth_required(f):
             else:
                 return jsonify({"msg": "Invalid Nightbot credentials"}), 401
 
-        print('INVALID AUTH TOKEN FORMAT')  #convert to log
+        #error_log.error('INVALID AUTH TOKEN FORMAT')
         return redirect(url_for('auth.login'))
 
     return decorated_function
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
+    ip = request.remote_addr
     if request.method == 'POST':
         data = request.json
         if not data or not data.get('username') or not data.get('password'):
+            log_failed_attempt(ip)
             return jsonify({"msg": "Bad request"}), 400
         
         user = User.query.filter_by(username=data['username'].lower()).first()
         if user and user.verify_password(data['password']):
             access_token = create_access_token(identity=user.username)
+            
             print(f"Generated JWT Token: {access_token}")  # Debug print
+            #access_log.info(f'{user} successfully logged in from {ip}')
+            
             return jsonify(access_token=access_token, api_key=user.api_key), 200
+        log_failed_attempt(ip)
         return jsonify({"msg": "Invalid credentials"}), 401
     return render_template('login.html')
 

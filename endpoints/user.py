@@ -34,7 +34,6 @@ def validate_password(password):
 @user_bp.route('/api/user', methods=['GET'])
 @auth_required
 def get_user():
-    print('GET USER')
     current_user = get_jwt_identity()
     user = User.query.filter_by(username=current_user).first()
     if user:

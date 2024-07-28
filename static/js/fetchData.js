@@ -66,10 +66,6 @@ function fetchData() {
             queueList.appendChild(li);
         });
         addDragAndDropListeners('queue-list');
-
-        // Apply the current theme to the newly added items
-        const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
-        changeTheme(preferredTheme);
     });
 
     // Fetch lives order
@@ -102,11 +98,11 @@ function fetchData() {
             livesList.appendChild(li);
         });
         addDragAndDropListeners('lives-list');
-
-        // Apply the current theme to the newly added items
-        const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
-        changeTheme(preferredTheme);
     });
+
+    // Apply the current theme to the newly added items
+    const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+    changeTheme(preferredTheme);
     hideLoadingSpinner();
     stopRefreshAnimation();
 }

@@ -171,22 +171,7 @@ function toggleTheme() {
     }
 }
 
-// Save the preferred theme to localStorage
+/* Save the preferred theme to localStorage */
 function savePreferredTheme(theme) {
     localStorage.setItem('preferredTheme', theme);
 }
-
-// Event listener for DOMContentLoaded to set the initial theme
-document.addEventListener('DOMContentLoaded', () => {
-    const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
-    changeTheme(preferredTheme);
-    document.getElementById('theme-select').value = preferredTheme;
-});
-
-// Update theme selection in the settings modal
-document.getElementById('theme-select').addEventListener('change', (event) => {
-    const selectedTheme = event.target.value;
-    changeTheme(selectedTheme);
-    savePreferredTheme(selectedTheme);
-});
-

@@ -186,7 +186,6 @@ function updateOrder(listId) {
     .then(checkAuth)
     .then(response => response.text())
     .then(data => {
-        //fetchData();
         console.log('Order updated successfully');
     });
 }
@@ -234,7 +233,6 @@ function spinQueue() {
     .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
-        //fetchData();
         console.log('Spun successfully');
     });
 
@@ -253,7 +251,6 @@ function spinQueue() {
     .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
-        //fetchData();
         console.log('Queue updated successfully');
     });
 }
@@ -286,7 +283,6 @@ function clearSpin() {
     .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())
     .then(data => {
-        //fetchData();
         console.log('Spin selection cleared successfully');
     });
 }
@@ -332,7 +328,6 @@ function toggleHighlight(checkbox) {
     .then(checkAuth)
     .then(response => response.text())
     .then(data => {
-        //fetchData();
         console.log('Highlighted users updated successfully');
     });
 }
@@ -376,7 +371,6 @@ function toggleSelectLivesUser(checkbox) {
     .then(checkAuth)
     .then(response => response.text())
     .then(data => {
-        //fetchData();
         console.log('Highlighted users updated successfully');
     });
 
@@ -559,8 +553,18 @@ document.addEventListener('visibilitychange', () => {
 document.getElementById('password').addEventListener('blur', handlePasswordRefill);
 document.getElementById('password').addEventListener('focus', clearPassword);
 
-// Initial functions
-fetchData();
-resetActivityTimeout();
-setLastActivityTime();
-setAvatar();
+document.addEventListener('DOMContentLoaded', () => {
+    const preferredTheme = localStorage.getItem('preferredTheme') || 'light';
+    //changeTheme(preferredTheme);
+    document.getElementById('theme-select').value = preferredTheme;
+
+    // Initialize avatar and fetch user data only once
+    setAvatar();
+
+    // Fetch initial data
+    fetchData();
+
+    // Set up activity timeout
+    resetActivityTimeout();
+    setLastActivityTime();
+});
