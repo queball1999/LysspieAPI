@@ -28,7 +28,6 @@ socket.on('update', function(data) {
 function checkAuth(response) {
     console.log(`Auth check: ${response.status}`);
     if (response.status === 401) {
-        // Token expired or invalid, redirect to login
         window.location.href = '/login';
     }
     return response;

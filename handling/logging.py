@@ -3,7 +3,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask.logging import create_logger
 
-loggers = {'log': '', 'access_log': '','error_log': ''}
+loggers = {}
 
 def setup_logging(app):
     global loggers
@@ -42,3 +42,18 @@ def setup_logging(app):
     loggers['error_log'] = error_log
 
     return loggers
+
+def log_write(log: str = '', msg: str = '', user: str = '', ip: str = '', data: str = '') -> None:
+    global loggers
+    log = log.lower()
+    if log in ['log', 'access_log', 'error_log']:
+        log_str = f'{msg}'
+        if user:
+            log_str += f' -- User: {user}'
+        if ip:
+            log_str += f' -- IP: {ip}'
+        if data:
+            log_str += f' -- Data: {data}'
+        loggers[log].error(log_str)
+    else:
+        loggers['log'].error(f'Error: Could not write to log {log}')

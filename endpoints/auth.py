@@ -9,8 +9,13 @@ from functools import wraps
 from .database import db
 from .models import *
 from .rate_limit import *
+#from handling.logging import loggers
 
 auth_bp = Blueprint('auth', __name__)
+loggers = {'log': '', 'access_log': '', 'error_log': ''}
+log = loggers['log']
+access_log = loggers['access_log']
+error_log = loggers['error_log']
 
 NIGHTBOT_USER = os.getenv('NIGHTBOT_USER')
 NIGHTBOT_CHANNEL = os.getenv('NIGHTBOT_CHANNEL')
@@ -36,9 +41,10 @@ def auth_required(f):
             if jwt_regex.match(auth_token):
                 try:
                     verify_jwt_in_request()
+                    access_log.error(f'{user.username} successfully authenticated via JWT')
                     return f(*args, **kwargs)
                 except Exception as jwt_error:
-                    #error_log.error('JWT ERROR', jwt_error, auth_token)   #convert to log
+                    error_log.error('JWT ERROR', jwt_error, auth_token)   #convert to log
                     return redirect(url_for('auth.login'))
 
             # Check if the token matches the API key pattern
@@ -48,22 +54,24 @@ def auth_required(f):
                     for user in users:
                         try:
                             if user.api_key == auth_token:
+                                access_log.error(f'{user.username} successfully authenticated via API')
                                 return f(*args, **kwargs)
                         except Exception as e:
                             continue
                     return jsonify({"msg": "Invalid API key"}), 401
                 except Exception as e:
-                    #error_log.error(f'API ERROR: {e}')
+                    error_log.error(f'API ERROR: {e}')
                     return jsonify({"msg": "Something went wrong processing API key"}), 500
 
         # Check for Nightbot authentication
         if nightbot_user and nightbot_channel:
             if nightbot_user == NIGHTBOT_USER and nightbot_channel == NIGHTBOT_CHANNEL:
+                access_log.error(f'{user.username} successfully authenticated via NIGHTBOT')
                 return f(*args, **kwargs)
             else:
                 return jsonify({"msg": "Invalid Nightbot credentials"}), 401
 
-        #error_log.error('INVALID AUTH TOKEN FORMAT')
+        error_log.error('INVALID AUTH TOKEN FORMAT. Redirected to login.')
         return redirect(url_for('auth.login'))
 
     return decorated_function
@@ -76,17 +84,23 @@ def login():
         data = request.json
         if not data or not data.get('username') or not data.get('password'):
             log_failed_attempt(ip)
+            access_log.error(f'Bad Request from {ip} -- Request: {data}')
             return jsonify({"msg": "Bad request"}), 400
         
         user = User.query.filter_by(username=data['username'].lower()).first()
         if user and user.verify_password(data['password']):
             access_token = create_access_token(identity=user.username)
             
-            print(f"Generated JWT Token: {access_token}")  # Debug print
-            #access_log.info(f'{user} successfully logged in from {ip}')
+            print(f"Generated JWT Token: {access_token}")
+            access_log.error(f'{user.username} successfully logged in from {ip}')
+            print(f'{user.username} successfully logged in from {ip}')
             
             return jsonify(access_token=access_token, api_key=user.api_key), 200
         log_failed_attempt(ip)
+        if user:
+            access_log.error(f'Invalid credentials. -- User: {user.username} -- IP: {ip} -- Request: {data}')
+        else:
+            access_log.error(f'Invalid credentials. -- User: None Found -- IP: {ip} -- Request: {data}')
         return jsonify({"msg": "Invalid credentials"}), 401
     return render_template('login.html')
 

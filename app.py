@@ -36,21 +36,21 @@ from endpoints import *
 #       - Need to implement access logging.
 #       - Need to ban users with failed authentication for set amount of time.
 
-# Load .env
-load_dotenv()
-
 # Initialize Flask app
 app = Flask(__name__)
 socketio = SocketIO(app)
 
 # Setup logging
+
+from handling import *
 loggers = setup_logging(app)
 log = loggers['log']
 access_log = loggers['access_log']
 error_log = loggers['error_log']
 
+
 # Register the limiter
-limiter.init_app(app)
+#limiter.init_app(app)
 
 def load_config():
     app.config['DEBUG'] = os.getenv('DEBUG', 'False').lower() in ['true', '1', 't']
@@ -86,18 +86,18 @@ def initialize_extensions():
     Bcrypt(app).init_app(app)
 
 def create_database():
-    with app.app_context():
-        try:
-            db.create_all()
-            if not User.query.filter_by(username=app.config['APP_DEFAULT_USERNAME']).first():
-                log.error(f"No users found. Generating defalt user.")
-                api_key = User.generate_api_key()
-                default_user = User(username=app.config['APP_DEFAULT_USERNAME'], password=app.config['APP_DEFAULT_PASSWORD'], api_key=api_key, role='admin')
-                db.session.add(default_user)
-                db.session.commit()
-        except Exception as e:
-            log.error(f"Failed to create database tables: {e}")
-            sys.exit(1)
+        with app.app_context():    
+            #log_write(log='log', msg=f"Creating database tables")
+            try:
+                db.create_all()
+                if not User.query.filter_by(username=app.config['APP_DEFAULT_USERNAME']).first():
+                    api_key = User.generate_api_key()
+                    default_user = User(username=app.config['APP_DEFAULT_USERNAME'], password=app.config['APP_DEFAULT_PASSWORD'], api_key=api_key, role='admin')
+                    db.session.add(default_user)
+                    db.session.commit()
+            except Exception as e:
+                log_write(log='error_log', msg=f"Failed to create database tables: {e}")
+                sys.exit(1)
 
 @app.before_request
 def handle_before_request():
@@ -108,6 +108,7 @@ def handle_before_request():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
 
 def main():
     load_config()
