@@ -36,7 +36,7 @@ function login() {
     })
     .catch(error => {
         console.error(error);
-        alert('Login failed');
+        document.getElementById('error-message').textContent = 'Login failed';
     });
 }
 

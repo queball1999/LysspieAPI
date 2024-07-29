@@ -9,13 +9,9 @@ from functools import wraps
 from .database import db
 from .models import *
 from .rate_limit import *
-#from handling.logging import loggers
+from handling.logging import *
 
 auth_bp = Blueprint('auth', __name__)
-loggers = {'log': '', 'access_log': '', 'error_log': ''}
-log = loggers['log']
-access_log = loggers['access_log']
-error_log = loggers['error_log']
 
 NIGHTBOT_USER = os.getenv('NIGHTBOT_USER')
 NIGHTBOT_CHANNEL = os.getenv('NIGHTBOT_CHANNEL')
@@ -23,11 +19,13 @@ NIGHTBOT_CHANNEL = os.getenv('NIGHTBOT_CHANNEL')
 def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        ip = request.remote_addr
         auth_header = request.headers.get('Authorization')
         nightbot_user = request.headers.get('Nightbot-User')
         nightbot_channel = request.headers.get('Nightbot-Channel')
         
         if not auth_header and not (nightbot_user and nightbot_channel):
+            log_write(log='access_log', msg='Missing Authorization Header', ip=ip)
             return jsonify({"msg": "Missing Authorization Header"}), 401
 
         if auth_header:
@@ -41,10 +39,10 @@ def auth_required(f):
             if jwt_regex.match(auth_token):
                 try:
                     verify_jwt_in_request()
-                    access_log.error(f'{user.username} successfully authenticated via JWT')
+                    #log_write(log='access_log', msg=f'Successfully authenticated via JWT', ip=ip)
                     return f(*args, **kwargs)
                 except Exception as jwt_error:
-                    error_log.error('JWT ERROR', jwt_error, auth_token)   #convert to log
+                    log_write(log='access_log', msg=f'JWT ERROR: {jwt_error}', ip=ip)
                     return redirect(url_for('auth.login'))
 
             # Check if the token matches the API key pattern
@@ -54,53 +52,50 @@ def auth_required(f):
                     for user in users:
                         try:
                             if user.api_key == auth_token:
-                                access_log.error(f'{user.username} successfully authenticated via API')
+                                #log_write(log='access_log', msg=f'Successfully authenticated via API', user=user.username, ip=ip)
                                 return f(*args, **kwargs)
                         except Exception as e:
+                            log_write(log='error_log', msg=f'An unexpected error occuren when parsing users; {e}', ip=ip, user=user)
                             continue
-                    return jsonify({"msg": "Invalid API key"}), 401
+                    
+                    log_write(log='access_log', msg=f'Invalid API key provided', ip=ip)
+                    return jsonify({"msg": "Invalid API key provided"}), 401
                 except Exception as e:
-                    error_log.error(f'API ERROR: {e}')
+                    log_write(log='access_log', msg=f'API ERROR: {e}')
                     return jsonify({"msg": "Something went wrong processing API key"}), 500
 
         # Check for Nightbot authentication
         if nightbot_user and nightbot_channel:
             if nightbot_user == NIGHTBOT_USER and nightbot_channel == NIGHTBOT_CHANNEL:
-                access_log.error(f'{user.username} successfully authenticated via NIGHTBOT')
+                #log_write(log='access_log', msg=f'Successfully authenticated via NIGHTBOT', user=user.username, ip=ip)
                 return f(*args, **kwargs)
             else:
+                log_write(log='access_log', msg='Invalid Nightbot credentials', ip=ip)
                 return jsonify({"msg": "Invalid Nightbot credentials"}), 401
-
-        error_log.error('INVALID AUTH TOKEN FORMAT. Redirected to login.')
+            
+        log_write(log='access_log', msg=f'INVALID AUTH TOKEN FORMAT. Redirected to login.', ip=ip)
         return redirect(url_for('auth.login'))
 
     return decorated_function
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
 def login():
     ip = request.remote_addr
     if request.method == 'POST':
         data = request.json
         if not data or not data.get('username') or not data.get('password'):
             log_failed_attempt(ip)
-            access_log.error(f'Bad Request from {ip} -- Request: {data}')
+            log_write(log='access_log', msg=f'Bad Request', ip=ip, data=data)
             return jsonify({"msg": "Bad request"}), 400
         
         user = User.query.filter_by(username=data['username'].lower()).first()
         if user and user.verify_password(data['password']):
             access_token = create_access_token(identity=user.username)
-            
-            print(f"Generated JWT Token: {access_token}")
-            access_log.error(f'{user.username} successfully logged in from {ip}')
-            print(f'{user.username} successfully logged in from {ip}')
-            
+            log_write(log='access_log', msg=f'Successful login', user=user.username, ip=ip)
             return jsonify(access_token=access_token, api_key=user.api_key), 200
+        
         log_failed_attempt(ip)
-        if user:
-            access_log.error(f'Invalid credentials. -- User: {user.username} -- IP: {ip} -- Request: {data}')
-        else:
-            access_log.error(f'Invalid credentials. -- User: None Found -- IP: {ip} -- Request: {data}')
+        log_write(log='access_log', msg=f'Invalid credentials.', user=user.username, data=data, ip=ip)
         return jsonify({"msg": "Invalid credentials"}), 401
     return render_template('login.html')
 

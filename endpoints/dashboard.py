@@ -18,7 +18,7 @@ dashboard_bp = Blueprint('dashboard', __name__)
 @dashboard_bp.route('/dashboard')
 def dashboard():
     web_server = request.environ.get('SERVER_SOFTWARE', 'Unknown Web Server')
-    app_version = "1.0.0"  # Replace with your app version
+    app_version = "1.0.0"
     os_info = platform.system() + " " + platform.release()
     python_version = platform.python_version()
     return render_template('dashboard.html', web_server=web_server, app_version=app_version, os=os_info, python_version=python_version)

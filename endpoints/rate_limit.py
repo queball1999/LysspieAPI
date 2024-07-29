@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 # Initialize Limiter
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["1500 per 15 minutes"]
 )
 
 # IP Ban tracking
