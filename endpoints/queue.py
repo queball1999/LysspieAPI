@@ -31,7 +31,12 @@ def validate_username(username):
 def manage_queue():
     action = request.args.get('action')
     username = request.args.get('username')
-    ip = request.remote_addr
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
     if not action or not username or not validate_username(username):
         log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
         return "missing_parameters", 400
@@ -105,7 +110,12 @@ def remove_user():
 @auth_required
 def update_queue_order():
     data = request.get_json()
-    ip = request.remote_addr
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
     if not data:
         log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
         return "missing_parameters", 400
@@ -130,7 +140,12 @@ def update_queue_order():
 @auth_required
 def update_highlighted_users():
     data = request.get_json()
-    ip = request.remote_addr
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+        
     if not data:
         log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
         return "missing_parameters", 400

@@ -9,3 +9,4 @@ python-dotenv
 cryptography
 psycopg2
 flask_limiter
+filelock

@@ -5,10 +5,18 @@
 #
 #   Software: Microsoft Visual Studios 16.8.3
 #
-#   Date: 27th of July 2024
+#   Date: 30th of July 2024
 #
 #   Author: Quynn Bell
 #
+
+# FIXME:
+#       - uwsgi struggles with SSE events, need to solve
+#       - settings modal seems to stack on mobile, but clicking on category does not display the settings.
+#       - need to add lazy loading animation. also refresh button needs animation.
+#       - Should the password be hashed before sent to server? Probably
+#       - Need to ban users with failed authentication for set amount of time.
+#       - Need tooltips for buttons
 
 import os
 import secrets
@@ -27,14 +35,6 @@ from flask_socketio import SocketIO
 
 # Custom module imports
 from endpoints import *
-
-# FIXME:
-#       - uwsgi struggles with SSE events, need to solve
-#       - settings modal needs to stack on mobile.
-#       - need to add lazy loading animation. also refresh button needs animation.
-#       - Need to implement logging.
-#       - Should the password be hashed before sent to server? Probably
-#       - Need to ban users with failed authentication for set amount of time.
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -99,16 +99,23 @@ def create_database():
 
 @app.before_request
 def handle_before_request():
-    ip_ban_response = check_ip_ban()
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+    ip_ban_response = check_ip_ban(ip)
     if ip_ban_response:
-        log_write(log='access_log', msg=f'IP banned from request', ip=request.remote_addr)
+        log_write(log='access_log', msg=f'IP banned from request', ip=ip)
         return ip_ban_response
 
 @app.errorhandler(404)
 def page_not_found(e):
-    log_write(log='error_log', msg=f'404 error encountered', ip=request.remote_addr)
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+    log_write(log='error_log', msg=f'404 error encountered', ip=ip)
     return render_template('404.html'), 404
-
 
 def main():
     load_config()
@@ -119,10 +126,10 @@ def main():
 
 if __name__ == '__main__':
     main()
-    host = socket.gethostname()
-    IP = socket.gethostbyname(host)
+    HOST = socket.gethostname()
+    HOST_IP = socket.gethostbyname(HOST)
     try:
-        socketio.run(app, host=IP, port=5100, debug=app.config['DEBUG'], use_reloader=False)
+        socketio.run(app, host=HOST_IP, port=5100, debug=app.config['DEBUG'], use_reloader=False)
     except Exception as e:
-        log.error(f"Failed to start the Flask server: {e}")
+        log_write(log='error_log', msg=f"Failed to start the Flask server: {e}")
         sys.exit(1)

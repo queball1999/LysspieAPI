@@ -19,7 +19,11 @@ NIGHTBOT_CHANNEL = os.getenv('NIGHTBOT_CHANNEL')
 def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        ip = request.remote_addr
+        if request.headers.getlist("X-Forwarded-For"):
+            ip = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+            ip = request.remote_addr
+            
         auth_header = request.headers.get('Authorization')
         nightbot_user = request.headers.get('Nightbot-User')
         nightbot_channel = request.headers.get('Nightbot-Channel')
@@ -39,7 +43,7 @@ def auth_required(f):
             if jwt_regex.match(auth_token):
                 try:
                     verify_jwt_in_request()
-                    #log_write(log='access_log', msg=f'Successfully authenticated via JWT', ip=ip)
+                    log_write(log='access_log', msg=f'Successfully authenticated via JWT', ip=ip)
                     return f(*args, **kwargs)
                 except Exception as jwt_error:
                     log_write(log='access_log', msg=f'JWT ERROR: {jwt_error}', ip=ip)
@@ -52,7 +56,7 @@ def auth_required(f):
                     for user in users:
                         try:
                             if user.api_key == auth_token:
-                                #log_write(log='access_log', msg=f'Successfully authenticated via API', user=user.username, ip=ip)
+                                log_write(log='access_log', msg=f'Successfully authenticated via API', user=user.username, ip=ip)
                                 return f(*args, **kwargs)
                         except Exception as e:
                             log_write(log='error_log', msg=f'An unexpected error occuren when parsing users; {e}', ip=ip, user=user)
@@ -67,7 +71,7 @@ def auth_required(f):
         # Check for Nightbot authentication
         if nightbot_user and nightbot_channel:
             if nightbot_user == NIGHTBOT_USER and nightbot_channel == NIGHTBOT_CHANNEL:
-                #log_write(log='access_log', msg=f'Successfully authenticated via NIGHTBOT', user=user.username, ip=ip)
+                log_write(log='access_log', msg=f'Successfully authenticated via NIGHTBOT', user=user.username, ip=ip)
                 return f(*args, **kwargs)
             else:
                 log_write(log='access_log', msg='Invalid Nightbot credentials', ip=ip)
@@ -80,7 +84,10 @@ def auth_required(f):
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    ip = request.remote_addr
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
     if request.method == 'POST':
         data = request.json
         if not data or not data.get('username') or not data.get('password'):

@@ -235,7 +235,7 @@ body.dark-mode {
 }
 
 .highlight {
-    background-color: var(--primary-color);
+    background-color: var(--background-color);
     font-weight: bold;
 }
 
