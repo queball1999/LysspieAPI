@@ -235,7 +235,7 @@ body.dark-mode {
 }
 
 .highlight {
-    background-color: var(--primary-color);
+    background-color: var(--background-color);
     font-weight: bold;
 }
 
@@ -353,7 +353,7 @@ body.dark-mode {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 1001;
     left: 0;
     top: 0;
     width: 100%;
@@ -367,7 +367,8 @@ body.dark-mode {
     margin: 20vh auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 50%;
+    width: 90%;
+    max-width: 600px;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -378,14 +379,15 @@ body.dark-mode {
     width: 100%;
 }
 
-.modal-buttons button{
+.modal-buttons button {
     width: auto;
-    padding: 10px;
+    padding: 10px 20px;
     background-color: var(--button-color);
     color: var(--text-color);
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .settings-container {
@@ -404,17 +406,12 @@ body.dark-mode {
     min-width: 150px;
 }
 
-.settings-content {
-    flex: 3; /* Take more space than the menu */
-    padding: 10px;
-}
-
 .settings-menu a {
     display: block;
-    padding: 10px;
+    padding: 15px 20px;
     color: var(--text-color);
     text-decoration: none;
-    margin-bottom: 5px;
+    border-bottom: 1px solid var(--secondary-color);
     cursor: pointer;
 }
 
@@ -422,9 +419,14 @@ body.dark-mode {
     background-color: var(--secondary-color);
 }
 
+.settings-content {
+    flex: 3; /* Take more space than the menu */
+    padding: 20px;
+}
+
 .color-selection {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 20px;
 }
 
@@ -435,6 +437,7 @@ body.dark-mode {
 
 .color-selection input {
     margin-bottom: 5px;
+    margin-left: 10px;
 }
 
 .color-selection-button {
@@ -445,12 +448,13 @@ body.dark-mode {
 .color-selection-button button {
     margin-top: 25px;
     width: auto;
-    padding: 10px;
+    padding: 10px 20px;
     background-color: var(--button-color);
     color: var(--text-color);
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .close {
@@ -526,7 +530,47 @@ body.dark-mode {
     display: none;
 }
 
-/* Media Queries for mobile handling */
+.settings-section.active {
+    display: block;
+}
+
+/* Loading spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    border: 4px solid var(--primary-color);
+    border-top: 4px solid var(--button-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+#refresh.loading {
+    position: relative;
+    padding-left: 45px;
+}
+
+#refresh.loading::before {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 3px solid var(--primary-color);
+    border-top: 3px solid var(--button-color);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+/* Mobile specific styles */
 @media (max-width: 768px) {
     .header {
         justify-content: space-between;
@@ -554,6 +598,28 @@ body.dark-mode {
 
     .login-container,
     .modal-content {
-        width: 80%;
+        width: 90%;
+    }
+
+    .settings-container {
+        flex-direction: column;
+    }
+
+    .settings-menu {
+        width: 100%;
+        border-bottom: 1px solid var(--secondary-color);
+    }
+
+    .settings-content {
+        width: 100%;
+        display: none;
+    }
+
+    .settings-section.active {
+        display: block;
+    }
+
+    .modal-content {
+        width: 90%;
     }
 }

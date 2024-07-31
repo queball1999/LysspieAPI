@@ -9,6 +9,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from .auth import auth_required
 from .models import *
 from .database import db
+from handling.logging import *
 
 # Get the current file's location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -30,8 +31,14 @@ def validate_username(username):
 @auth_required
 def manage_ninelives():
     username = request.args.get('username')
-    
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
     if not username or not validate_username(username):
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
         return "missing_parameters", 400
     
     user = NineLives.query.filter_by(username=username).first()
@@ -62,6 +69,16 @@ def manage_ninelives():
 def bulk_ban():
     current_user = get_jwt_identity()
     data = request.get_json()
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not data:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     usernames = data.get('usernames', [])
     
     for username in usernames:
@@ -79,6 +96,16 @@ def bulk_ban():
 def clear_lives():
     current_user = get_jwt_identity()
     data = request.get_json()
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not data:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     usernames = data.get('usernames', [])
     
     for username in usernames:
@@ -96,6 +123,16 @@ def clear_lives():
 def ban_user():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not username:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     if not validate_username(username):
         return "Invalid username format", 400
     user = NineLives.query.filter_by(username=username).first()
@@ -111,6 +148,16 @@ def ban_user():
 def remove_user():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not username:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     if not validate_username(username):
         return "Invalid username format", 400
     user = NineLives.query.filter_by(username=username).first()
@@ -133,6 +180,16 @@ def get_lives():
 def adjust_lives():
     current_user = get_jwt_identity()
     username = request.args.get('username')
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not username:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     if not validate_username(username):
         return "Invalid username format", 400
     amount = int(request.args.get('amount'))
@@ -151,6 +208,16 @@ def adjust_lives():
 @auth_required
 def update_lives_order():
     data = request.get_json()
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not data:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     order = data.get('order', [])
     
     for position, username in enumerate(order):
@@ -171,6 +238,16 @@ def update_lives_order():
 @auth_required
 def update_highlighted_lives():
     data = request.get_json()
+    
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not data:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     highlighted_users = data.get('highlighted_users', [])
     
     for username in highlighted_users:

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found</title>
+    <title>429 Too Many Requests</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 </head>
@@ -16,8 +16,8 @@
 
     <div class="container">
         <div class="error-box">
-            <h2>404 Not Found</h2>
-            <p>Sorry, the page you are looking for does not exist.</p>
+            <h2>429 Too Many Requests</h2>
+            <p>You have been rate-limited. Please try again later.</p>
             <img src="{{ url_for('static', filename='images/404_image.png') }}" alt="404 Image">
         </div>
     </div>

@@ -1,4 +1,4 @@
-ï»¿/**
+/**
  * Initialize necessary variables
  */
 let intervalId;
@@ -787,7 +787,7 @@ function saveProfile() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ display_name: displayName, password: password !== 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢' ? password : '', api_key: apiKey })
+        body: JSON.stringify({ display_name: displayName, password: password !== '••••••••' ? password : '', api_key: apiKey })
     })
     .then(checkAuth) // Check for unauthorized status
     .then(response => response.json())

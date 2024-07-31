@@ -8,6 +8,7 @@ from .socketio import *
 from .auth import auth_required
 from .models import *
 from .database import db
+from handling.logging import *
 
 # Get the current file's location
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -28,11 +29,16 @@ def validate_username(username):
 @queue_bp.route('/api/queue', methods=['GET'])
 @auth_required
 def manage_queue():
-    print('QUEUE')
     action = request.args.get('action')
     username = request.args.get('username')
-    print(action, username)
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
     if not action or not username or not validate_username(username):
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
         return "missing_parameters", 400
 
     if action == "join":
@@ -104,6 +110,16 @@ def remove_user():
 @auth_required
 def update_queue_order():
     data = request.get_json()
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+
+    if not data:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     order = data.get('order', [])
     
     for position, username in enumerate(order):
@@ -124,6 +140,16 @@ def update_queue_order():
 @auth_required
 def update_highlighted_users():
     data = request.get_json()
+
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
+        
+    if not data:
+        log_write(log='error_log', msg='Missing parameters or invalid username', ip=ip, data=request.args)
+        return "missing_parameters", 400
+    
     highlighted_users = data.get('highlighted_users', [])
     
     for username in highlighted_users:
