@@ -6,6 +6,7 @@
     <title>Dashboard Login</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 </head>
 <body>
     <div class="login-wrapper">
@@ -18,7 +19,7 @@
             <div class="show-password-container">
                 <input type="checkbox" id="show-password" onclick="togglePassword()"> Show Password
             </div>
-            <button onclick="login()">Login</button>
+            <button onclick="login()" title="Login">Login</button>
             <p id="error-message" style="color: red;"></p>
         </div>
     </div>

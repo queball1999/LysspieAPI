@@ -13,10 +13,6 @@
 # FIXME:
 #       - uwsgi struggles with SSE events, need to solve
 #       - settings modal seems to stack on mobile, but clicking on category does not display the settings.
-#       - need to add lazy loading animation. also refresh button needs animation.
-#       - Should the password be hashed before sent to server? Probably
-#       - Need to ban users with failed authentication for set amount of time.
-#       - Need tooltips for buttons
 
 import os
 import secrets

@@ -60,14 +60,14 @@ class User(db.Model):
     dark_primary_color = db.Column(db.String(7), default='#202020')
     dark_secondary_color = db.Column(db.String(7), default='#363636')
     dark_button_color = db.Column(db.String(7), default='#4CAF50')
-    
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
 
     @password.setter
     def password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        self.password_hash = self.hash_password(password)
 
     @property
     def api_key(self):
@@ -78,8 +78,15 @@ class User(db.Model):
         self.api_key_enc = fernet.encrypt(api_key.encode()).decode()
         
     def verify_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, password)
+        return self.password_hash == password
     
     @staticmethod
+    def hash_password(password):
+        return hashlib.sha256(password.encode()).hexdigest()
+
+    @staticmethod
     def generate_api_key():
-        return 'q-' + secrets.token_hex(32)
+        while True:
+            api_key = 'q-' + secrets.token_hex(32)
+            if not db.session.query(User).filter_by(api_key_enc=fernet.encrypt(api_key.encode()).decode()).first():
+                return api_key

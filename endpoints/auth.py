@@ -43,7 +43,7 @@ def auth_required(f):
             if jwt_regex.match(auth_token):
                 try:
                     verify_jwt_in_request()
-                    log_write(log='access_log', msg=f'Successfully authenticated via JWT', ip=ip)
+                    #log_write(log='access_log', msg=f'Successfully authenticated via JWT', ip=ip)
                     return f(*args, **kwargs)
                 except Exception as jwt_error:
                     log_write(log='access_log', msg=f'JWT ERROR: {jwt_error}', ip=ip)
@@ -62,7 +62,7 @@ def auth_required(f):
                             log_write(log='error_log', msg=f'An unexpected error occuren when parsing users; {e}', ip=ip, user=user)
                             continue
                     
-                    log_write(log='access_log', msg=f'Invalid API key provided', ip=ip)
+                    log_write(log='access_log', msg=f'Invalid API key provided', ip=ip, token=auth_token)
                     return jsonify({"msg": "Invalid API key provided"}), 401
                 except Exception as e:
                     log_write(log='access_log', msg=f'API ERROR: {e}')
@@ -77,7 +77,7 @@ def auth_required(f):
                 log_write(log='access_log', msg='Invalid Nightbot credentials', ip=ip)
                 return jsonify({"msg": "Invalid Nightbot credentials"}), 401
             
-        log_write(log='access_log', msg=f'INVALID AUTH TOKEN FORMAT. Redirected to login.', ip=ip)
+        log_write(log='access_log', msg=f'INVALID AUTH TOKEN FORMAT. Redirected to login.', ip=ip, token=auth_token)
         return redirect(url_for('auth.login'))
 
     return decorated_function

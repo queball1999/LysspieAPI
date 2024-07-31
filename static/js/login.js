@@ -15,12 +15,15 @@ function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
+    // Hash the password using SHA-256
+    const hashedPassword = CryptoJS.SHA256(password).toString();
+    console.log(hashedPassword)
     fetch('/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password: hashedPassword })
     })
     .then(response => {
         if (response.status === 200) {

@@ -15,11 +15,11 @@
         </a>
         <div class="right-controls">
             <div class="header-buttons">
-                <button id="refresh" class="header-button" onclick="fetchData()">Refresh</button>
-                <a href="https://github.com/queball1999/LysspieAPI" class="header-button" target="_blank" rel="noopener noreferrer">
+                <button id="refresh" class="header-button" onclick="fetchData()" title="Refresh Data">Refresh</button>
+                <a href="https://github.com/queball1999/LysspieAPI" class="header-button" target="_blank" rel="noopener noreferrer" title="Source Code">
                     <img src="{{ url_for('static', filename='images/github-dark.svg') }}" alt="GitHub" id="github-icon"> Source code
                 </a>
-                <button id="theme-toggle" class="theme-button" onclick="toggleTheme()">
+                <button id="theme-toggle" class="theme-button" onclick="toggleTheme()" title="Toggle Theme">
                     <img src="{{ url_for('static', filename='images/moon.svg') }}" alt="Theme toggle" id="theme-icon">
                 </button>
             </div>
@@ -27,9 +27,9 @@
             <div class="avatar" onclick="toggleDropdown()">
                 <span id="avatar-text"></span>
                 <div class="dropdown-menu" id="dropdown-menu">
-                <a href="#" onclick="openProfile()">Profile</a>
-                    <a href="#" onclick="openSettings()">Settings</a>
-                    <a href="#" onclick="logout()">Logout</a>
+                    <a href="#" onclick="openProfile()" title="Open Profile Menu">Profile</a>
+                    <a href="#" onclick="openSettings()" title="Open Settings Menu">Settings</a>
+                    <a href="#" onclick="logout()" title="Logout">Logout</a>
                 </div>
             </div>
         </div>
@@ -39,10 +39,10 @@
         <div class="column">
             <h2>Queue</h2>
             <input type="number" id="spin-count" min="1" max="100" value="1">
-            <button onclick="spinQueue()">Spin</button>
-            <button onclick="clearSpin()">Clear Spin</button>
-            <button class="clear-queue-btn" onclick="openClearQueueModal()">Clear Queue</button>
-            <button class="toggle-view-btn" onclick="toggleView('queue-list')">Grid</button>
+            <button onclick="spinQueue()" title="Spin the queue">Spin</button>
+            <button onclick="clearSpin()" title="Clear the spin">Clear Spin</button>
+            <button class="clear-queue-btn" onclick="openClearQueueModal()" title="Clear the Queue">Clear Queue</button>
+            <button class="toggle-view-btn" onclick="toggleView('queue-list')" title="Toggle view">View</button>
             <div class="queue-container">
                 <ol id="queue-list" class="list">
                     <!-- Queue items will be inserted here by JavaScript -->
@@ -53,10 +53,10 @@
             <h2>Lives</h2>
             <div class="lives-controls">
                 <input type="checkbox" id="select-all-lives" onclick="toggleSelectAllLives(this)">
-                <button class="bulk-ban-btn" onclick="bulkBanUsers()" disabled>Bulk Ban</button>
-                <button class="bulk-clear-btn" onclick="openClearLivesModal()" disabled>Bulk Clear</button>
+                <button class="bulk-ban-btn" onclick="bulkBanUsers()" title="Ban all selected users" disabled>Bulk Ban</button>
+                <button class="bulk-clear-btn" onclick="openClearLivesModal()" title="Clear lives list" disabled>Bulk Clear</button>
             </div>
-            <button class="toggle-view-btn" onclick="toggleView('lives-list')">Grid</button>
+            <button class="toggle-view-btn" onclick="toggleView('lives-list')" title="Toggle view">View</button>
             <div class="lives-container">
                 <ul id="lives-list" class="list">
                     <!-- Lives items will be inserted here by JavaScript -->
@@ -71,9 +71,9 @@
             <span class="close" onclick="closeSettings()">&times;</span>
             <div class="settings-container">
                 <div class="settings-menu">
-                    <a href="#" data-section="general-settings" onclick="showGeneralSettings()">General</a>
-                    <a href="#" data-section="user-management" onclick="showUserManagement()">User Management</a>
-                    <a href="#" data-section="about-section" onclick="showAbout()">About</a>
+                    <a href="#" data-section="general-settings" onclick="showGeneralSettings()" title="General Settings">General</a>
+                    <a href="#" data-section="user-management" onclick="showUserManagement()" title="User Management">User Management</a>
+                    <a href="#" data-section="about-section" onclick="showAbout()" title="About">About</a>
                 </div>
                 <div class="settings-content">
                     <div id="general-settings" class="settings-section">
@@ -122,7 +122,7 @@
                             </div>
                         </div>
                         <div class="color-selection-button">
-                            <button onclick="saveColorSettings()">Save</button>
+                            <button onclick="saveColorSettings()" title="Save Settings">Save</button>
                         </div>
                     </div>
                     <div id="user-management" class="settings-section">
