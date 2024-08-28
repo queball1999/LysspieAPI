@@ -1,8 +1,8 @@
 import requests
 import time
 
-BASE_URL = "http://192.168.4.41:5100/api"  # Change this if your Flask app is running on a different address
-API_KEY = 'q-5180c78c36c9fbced61ca78ff1e4676fd862fbc2542114a10532c710d8dd4fff'  # Replace with your actual API key
+BASE_URL = "https://api.domain.com/api"  # Change this if your Flask app is running on a different address
+API_KEY = 'q-'  # Replace with your actual API key
 #JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcyMDk5NzUxMywianRpIjoiM2QyODM5ZDMtZTc0NS00ZWQ1LWFhYzMtMTUxNGFjNzhiYWIwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6ImFkbWluQGV4YW1wbGUuY29tIiwibmJmIjoxNzIwOTk3NTEzLCJjc3JmIjoiMGZhYThlZjktMDgzNS00NDAwLThhNDAtYzVmNzI4ZmE1NGQwIiwiZXhwIjoxNzIxMDAxMTEzfQ.GjBnEix7eRS4Wfbqq5tm7dIZu4oUSC1bl2laP41KEEw'  # Replace with your actual JWT token
 
 HEADERS = {
@@ -34,11 +34,37 @@ def test_ninelives(username):
 if __name__ == "__main__":
     # Test cases
     
-    test_username = "testuser"
+    usernames = [
+        "PixelCrafter",
+        "LunaWhisper",
+        "QuantumCoder",
+        "VividEchoes",
+        "StarryTraveler",
+        "MysticWanderer",
+        "EmberPulse",
+        "SilverShadow",
+        "CosmicVoyager",
+        "NexusNerd",
+        "RadiantScribe",
+        "MidnightMuser",
+        "BlazeTrail",
+        "HorizonSeeker",
+        "CrystalCipher",
+        "VelvetEcho",
+        "NovaStrider",
+        "UrbanNomad",
+        "WhisperingWinds",
+        "NeonWanderlust",
+        "EmberVeil",
+        "ShadowCrafter",
+        "AzureDreamer",
+        "RogueBard",
+        "TwilightDrifter"
+    ]
+
     
-    for i in range (25):
+    for user in usernames:
         print("Testing join:")
-        user = f"{test_username}{i}"
         test_join(user)
         
         print("\nTesting position:")

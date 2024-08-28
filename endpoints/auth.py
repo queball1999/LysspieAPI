@@ -25,9 +25,11 @@ def auth_required(f):
             ip = request.remote_addr
             
         auth_header = request.headers.get('Authorization')
+        user_agent = request.headers.get('User-Agent')
         nightbot_user = request.headers.get('Nightbot-User')
         nightbot_channel = request.headers.get('Nightbot-Channel')
-        
+        nightbot_response_url = request.headers.get('Nightbot-Response-Url')
+
         if not auth_header and not (nightbot_user and nightbot_channel):
             log_write(log='access_log', msg='Missing Authorization Header', ip=ip)
             return jsonify({"msg": "Missing Authorization Header"}), 401
@@ -70,8 +72,16 @@ def auth_required(f):
 
         # Check for Nightbot authentication
         if nightbot_user and nightbot_channel:
+            if "Nightbot-URL-Fetcher" not in user_agent:
+                log_write(log='access_log', msg='Invalid Nightbot Agent', ip=ip)
+                return jsonify({"msg": "Invalid Nightbot Agent"}), 401
+            
+            if "https://api.nightbot.tv" not in nightbot_response_url:
+                log_write(log='access_log', msg='Invalid Nightbot Agent', ip=ip)
+                return jsonify({"msg": "Invalid Nightbot Agent"}), 401
+            
             if nightbot_user == NIGHTBOT_USER and nightbot_channel == NIGHTBOT_CHANNEL:
-                log_write(log='access_log', msg=f'Successfully authenticated via NIGHTBOT', user=user.username, ip=ip)
+                log_write(log='access_log', msg=f'Successfully authenticated via NIGHTBOT', user=nightbot_user, ip=ip)
                 return f(*args, **kwargs)
             else:
                 log_write(log='access_log', msg='Invalid Nightbot credentials', ip=ip)
