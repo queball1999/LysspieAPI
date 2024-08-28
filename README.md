@@ -32,25 +32,6 @@ LysspieAPI is built to work in tandem with Nightbot, a popular Twitch bot that a
 
 - **Spin and Winner Selection:** A feature to randomly select winners during events or giveaways. This can be done directly through the web interface or via chat commands.
 
-### API Endpoints
-#### Authentication
-- `/api/login`: Authenticates the user and provides a token for accessing protected routes.
-
-#### Queue Management
-- `/api/get_queue`: Retrieves the current queue.
-- `/api/add_to_queue`: Adds a user to the queue.
-- `/api/remove_from_queue`: Removes a user from the queue.
-- `/api/clear_queue`: Clears the entire queue.
-
-#### Live Moderation
-- `/api/ban_user`: Bans a user from the chat.
-- `/api/unban_user`: Unbans a previously banned user.
-- `/api/clear_lives`: Clears lives from specific users.
-
-#### Spin and Winner Selection
-- `/api/spin_queue`: Spins the queue to select a random winner.
-- `/api/get_winner`: Retrieves the winner from the last spin
-
 ### Installation
 
 1. **Clone the repository:**
