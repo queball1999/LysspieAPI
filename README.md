@@ -28,7 +28,7 @@ LysspieAPI is built to work in tandem with Nightbot, a popular Twitch bot that a
 
 - **Live Moderation:** Instantly ban users or clear lives in the chat with just a few clicks. The moderation tools are designed to keep the chat clean and engaging.
 
-- **Seamless Integration with Nightbot:** The LizPy API is designed to work closely with Nightbot, ensuring that all commands and interactions in the Twitch chat are handled smoothly.
+- **Seamless Integration with Nightbot:** The LysspieAPI is designed to work closely with Nightbot, ensuring that all commands and interactions in the Twitch chat are handled smoothly.
 
 - **Spin and Winner Selection:** A feature to randomly select winners during events or giveaways. This can be done directly through the web interface or via chat commands.
 
@@ -67,10 +67,10 @@ LysspieAPI is built to work in tandem with Nightbot, a popular Twitch bot that a
     ```
 
 3. **Obtain Nightbot configuration information:**<br>
-    When you connect Nightbot to the LizPy API, Nightbot sends some information to help manage your Twitch chat effectively. This information is automatically sent to LizPy API whenever certain actions are performed. Here's what you need to know:
+    When you connect Nightbot to the LysspieAPI, Nightbot sends some information to help manage your Twitch chat effectively. This information is automatically sent to LysspieAPI whenever certain actions are performed. Here's what you need to know:
 
     - **Nightbot User Information**<br>
-    Nightbot sends information about the user who triggered the command in your Twitch chat. This helps LizPy API identify who is interacting with the system.
+    Nightbot sends information about the user who triggered the command in your Twitch chat. This helps LysspieAPI identify who is interacting with the system.
 
         ```bash
         NIGHTBOT_USER=name=twitchUsername&displayName=twitchUsername&provider=twitch&providerId=123456789&userLevel=owner
